@@ -150,7 +150,7 @@ const $=id=>document.getElementById(id),btn=$('play');
 function setBtn(){btn.textContent=playing?'❚❚':'▶';}
 function setSpeed(v){speed=v/100;$('spd').value=v;$('sv').innerHTML='<bdi dir=ltr>'+v+'% · '+(song?Math.round(song.bpm*speed):'')+' BPM</bdi>';$('spd').value=v;if(song)$('hbpm').innerHTML=Math.round(song.bpm*speed)+'<small>BPM'+(v!==100?' ('+song.bpm+')':'')+'</small>';document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',+c.dataset.v===+v));}
 $('spd').oninput=e=>setSpeed(+e.target.value);document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>setSpeed(+c.dataset.v));
-btn.onclick=async()=>{try{if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();await initAudio().catch(()=>{});}AC.resume&&AC.resume();}catch(e){}
+btn.onclick=async()=>{try{if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();await Promise.race([initAudio().catch(()=>{}),new Promise(r=>setTimeout(r,1500))]);}AC.resume&&AC.resume();}catch(e){}
  if(!evs)return;if(!playing&&idx>=evs.length-1){T=-1;idx=-1;cur=null;}playing=!playing;setBtn();};
 function load(s){const er=validate(s);document.querySelectorAll('#songs button').forEach(b=>b.classList.toggle('on',b.dataset.id===s.id));
  playing=false;setBtn();if(er.length){evs=null;$('err').style.display='block';$('err').innerHTML='<b>השיר לא תקין — לא מנגנים</b><br>'+er.slice(0,8).join('<br>');return;}
