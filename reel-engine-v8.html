@@ -761,7 +761,7 @@ function yin(b,o,W,sr){const tMin=Math.floor(sr/1200),tMax=Math.min(Math.floor(s
  for(let t=tMin;t<=tMax;t++){if(d[t]<.15){while(t+1<=tMax&&d[t+1]<d[t])t++;best=t;break;}}
  if(best<0)return null;const a=d[best-1],c=d[best+1],den=a+c-2*d[best];const tt=best+(den?(a-c)/(2*den):0);return {f:sr/tt,conf:1-d[best]};}
 function place(m,p){let bst=null;for(const c of COURSES){const f=m-OPEN[c];if(f<0||f>12)continue;
- let cost=p?Math.abs(f-p.fret)*.6+(c!==p.course?.35:0):f*.25;if(f>7)cost+=1;if(p&&f>p.fret+3)cost+=.5;if(!bst||cost<bst.cost)bst={course:c,fret:f,cost};}return bst;}
+ let cost=p?Math.abs(f-p.fret)*.6+(c!==p.course?.35:0):f*.25;cost+=f*.08;if(f>7)cost+=1;if(p&&f>p.fret+3)cost+=.5;if(!bst||cost<bst.cost)bst={course:c,fret:f,cost};}return bst;}
 function fold(m){while(m<48)m+=12;while(m>79)m-=12;return m;}
 async function recStart(){if(REC)return;closeDrawer8();
  try{if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();}await AC.resume();
