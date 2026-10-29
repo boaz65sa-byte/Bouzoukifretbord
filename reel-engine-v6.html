@@ -636,18 +636,62 @@ function rebuild(items){items=items.filter(i=>i.s&&i.s.trim());if(!items.length)
  for(const L of lines){if(py!=null&&L.y-py>lh*2.2)out.push('');py=L.y;L.its.sort((a,b)=>a.x-b.x);let s='';
   for(const it of L.its){const c=Math.max(s.length?s.length+1:0,Math.round((it.x-x0)/cw));if(s.length&&!/ $/.test(s)&&c<=s.length)s+=' ';s=s.padEnd(c,' ')+it.s;}out.push(s.replace(/\s+$/,''));}
  return out.join('\n');}
-async function ocrCanvas(cv){const w=await getOCR();const{data}=await w.recognize(cv);
+async function ocrCanvas(cv,noTab){const w=await getOCR();await w.setParameters({tessedit_char_whitelist:''});let{data}=await w.recognize(cv);
+ if(!noTab&&/^\s*[A-Ga-g][#b]?\s*[|\]\[Il1:]?\s*[-—_~=]{2,}/m.test(data.text)||(data.text.match(/-{3,}/g)||[]).length>=3){setMsg('נראה כמו טאב — מזהה שוב בדיוק גבוה…',false);await w.setParameters({tessedit_char_whitelist:'-|0123456789ABCDEFGabcdefg/hpx'});const r2=await w.recognize(cv);await w.setParameters({tessedit_char_whitelist:''});data=r2.data;}
  const items=(data.words||[]).map(t=>({s:t.text,x:t.bbox.x0,y:(t.bbox.y0+t.bbox.y1)/2,w:t.bbox.x1-t.bbox.x0,h:t.bbox.y1-t.bbox.y0}));return rebuild(items);}
-function prepCanvas(img,W,H){const sc=Math.min(3,Math.max(1,2000/W));const cv=document.createElement('canvas');cv.width=Math.round(W*sc);cv.height=Math.round(H*sc);const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,cv.width,cv.height);c.drawImage(img,0,0,cv.width,cv.height);return cv;}
+function prepCanvas(img,W,H){const sc=Math.min(3,Math.max(1,2400/W));const cv=document.createElement('canvas');cv.width=Math.round(W*sc);cv.height=Math.round(H*sc);const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,cv.width,cv.height);c.drawImage(img,0,0,cv.width,cv.height);const ang=skewAngle(cv);if(Math.abs(ang)>.1){const r=document.createElement('canvas');r.width=cv.width;r.height=cv.height;const rc=r.getContext('2d');rc.fillStyle='#fff';rc.fillRect(0,0,r.width,r.height);rc.translate(r.width/2,r.height/2);rc.rotate(-ang*Math.PI/180);rc.drawImage(cv,-cv.width/2,-cv.height/2);binarize(r);return r;}binarize(cv);return cv;}
+function skewAngle(cv){const s=Math.min(1,700/cv.width),w=Math.round(cv.width*s),h=Math.round(cv.height*s),t=document.createElement('canvas');t.width=w;t.height=h;const tc=t.getContext('2d');let best=0,bv=-1;
+ for(let a=-4;a<=4.001;a+=.25){tc.setTransform(1,0,0,1,0,0);tc.fillStyle='#fff';tc.fillRect(0,0,w,h);tc.translate(w/2,h/2);tc.rotate(-a*Math.PI/180);tc.drawImage(cv,-w/2,-h/2,w,h);const d=tc.getImageData(0,0,w,h).data;let v=0;
+  for(let y=0;y<h;y++){let n=0;for(let x=0;x<w;x++)if(d[(y*w+x)*4]<140)n++;v+=n*n;}if(v>bv){bv=v;best=a;}}return best;}
+// image tab detection: find 4/6 evenly spaced dash lines, erase lines & bars, OCR digits per line
+function cleanBand(q,W,H,gap){const lab=new Int32Array(W*H),dk=i=>q[i*4]<128;let n=0;const st=[];
+ for(let i=0;i<W*H;i++){if(!dk(i)||lab[i])continue;n++;let x0=1e9,x1=-1,y0=1e9,y1=-1,a=0;const px=[];st.push(i);lab[i]=n;
+  while(st.length){const j=st.pop();px.push(j);a++;const x=j%W,y=(j/W)|0;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;
+   for(const k of [j-1,j+1,j-W,j+W])if(k>=0&&k<W*H&&!lab[k]&&dk(k)&&Math.abs(k%W-x)<=1){lab[k]=n;st.push(k);}}
+  const w=x1-x0+1,h=y1-y0+1;if(a<gap*gap*.012||h<gap*.3||(w<gap*.14&&h>gap*.55))for(const j of px){q[j*4]=q[j*4+1]=q[j*4+2]=255;}}}
+async function tabDetect(cv){const W=cv.width,H=cv.height,c=cv.getContext('2d'),p=c.getImageData(0,0,W,H).data,dk=(x,y)=>p[(y*W+x)*4]<128;
+ const rows=new Array(H).fill(0);for(let y=0;y<H;y++){let n=0;for(let x=0;x<W;x+=2)if(dk(x,y))n++;rows[y]=n*2;}
+ const mx=Math.max(...rows);if(mx<W*.2)return null;const th=mx*.45;const L=[];
+ for(let y=0;y<H;y++){if(rows[y]>=th){let y2=y;while(y2+1<H&&rows[y2+1]>=th)y2++;if(y2-y<H*.01)L.push({y0:y,y1:y2,c:(y+y2)/2});y=y2;}}
+ const staves=[];let i=0;while(i<L.length){let j=i+1;const g=j<L.length?L[j].c-L[i].c:0;while(j<L.length&&Math.abs((L[j].c-L[j-1].c)-g)<g*.25&&g>H*.008)j++;
+  const n=j-i;if(n===4||n===6)staves.push(L.slice(i,j));else if(n>=8&&n%4===0&&n!==12){for(let k=i;k<j;k+=4)staves.push(L.slice(k,k+4));}else if(n===12){staves.push(L.slice(i,i+6),L.slice(i+6,j));}i=j>i+1?j:i+1;}
+ if(!staves.length)return null;const w=await getOCR();const out=[];
+ for(const st of staves){const gap=(st[st.length-1].c-st[0].c)/(st.length-1);const yA=Math.round(st[0].c),yB=Math.round(st[st.length-1].c);
+  // horizontal extent of the line runs
+  let xs=W,xe=0;for(const l of st){const y=Math.round(l.c);let st0=-1,last=-1e9;for(let x=0;x<W;x++){const d=dk(x,y)||dk(x,y-1)||dk(x,y+1);if(d){if(x-last>gap*.35)st0=x;last=x;if(x-st0>gap*3){xs=Math.min(xs,st0);xe=Math.max(xe,x);}}}}
+  if(xe-xs<W*.2)continue;
+  const lab=st.length===4?['D','A','F','C']:['e','B','G','D','A','E'];
+  const bars=new Set();for(let x=xs;x<=xe;x++){let ok=true;for(let k=0;k<st.length-1&&ok;k++){const ym=Math.round((st[k].c+st[k+1].c)/2);ok=dk(x,ym)||dk(x,ym-1)||dk(x,ym+1);}if(ok)bars.add(x);}
+  const digs=[];
+  for(let k=0;k<st.length;k++){const l=st[k];const y0=Math.max(0,Math.round(l.c-gap*.48)),y1=Math.min(H-1,Math.round(l.c+gap*.48)),bh=y1-y0+1,bw=xe-xs+1;
+   const b=document.createElement('canvas');b.width=bw+40;b.height=bh+40;const bc=b.getContext('2d');bc.fillStyle='#fff';bc.fillRect(0,0,b.width,b.height);const id=bc.getImageData(0,0,b.width,b.height),q=id.data;
+   const la=l.y0-3,lb=l.y1+3;for(let x=xs;x<=xe;x++){if(bars.has(x))continue;let ext=false;for(let y=y0;y<=y1;y++)if((y<la||y>lb)&&dk(x,y)&&(dk(x-1,y)||dk(x+1,y)||dk(x,y-1)||dk(x,y+1))){ext=true;break;}
+    for(let y=y0;y<=y1;y++){if(!dk(x,y))continue;if(!ext&&y>=la&&y<=lb)continue;const o=((y-y0+20)*b.width+(x-xs+20))*4;q[o]=q[o+1]=q[o+2]=0;}}
+   cleanBand(q,b.width,b.height,gap);bc.putImageData(id,0,0);const b2=document.createElement('canvas');b2.width=b.width*2;b2.height=b.height*2;const c2=b2.getContext('2d');c2.imageSmoothingEnabled=false;c2.drawImage(b,0,0,b2.width,b2.height);
+   await w.setParameters({tessedit_char_whitelist:'0123456789',tessedit_pageseg_mode:'7'});const{data}=await w.recognize(b2,{},{text:true,blocks:true});if(!data.symbols&&data.blocks){data.symbols=[];data.blocks.forEach(bl=>bl.paragraphs.forEach(pa=>pa.lines.forEach(li=>li.words.forEach(wd=>wd.symbols.forEach(s=>data.symbols.push(s))))));}
+   const sy=(data.symbols||[]).filter(s=>/\d/.test(s.text)).map(s=>({x0:s.bbox.x0/2-20+xs,x1:s.bbox.x1/2-20+xs,d:s.text.replace(/\D/g,'')})).sort((a,b)=>a.x0-b.x0);
+   for(let m=0;m<sy.length;m++){const s=sy[m],n=sy[m+1];if(n&&s.d==='1'&&n.x0-s.x1<gap*.12&&n.x0-s.x0<gap*.6){digs.push({k,x:s.x0,d:s.d+n.d});m++;}else digs.push({k,x:s.x0,d:s.d});}}
+  await w.setParameters({tessedit_char_whitelist:'',tessedit_pageseg_mode:'6'});
+  if(!digs.length)continue;const cw=gap*.62;const lines=lab.map(()=>[]);
+  for(const d of digs){const col=Math.max(0,Math.round((d.x-xs)/cw));lines[d.k].push([col,d.d]);}
+  const Wc=Math.round((xe-xs)/cw)+3;out.push(lines.map((ar,k)=>{const a=new Array(Wc).fill('-');for(const[col,d]of ar)for(let m=0;m<d.length;m++)a[col+m]=d[m];return lab[k]+'|'+a.join('')+'|';}).join('\n'));}
+ return out.length?out.join('\n\n'):null;}
+async function ocrDoc(cv){setMsg('מחפש שורות טאב בתמונה…',false);let tab=null;try{tab=await tabDetect(cv);}catch(e){tab=null;}
+ const txt=await ocrCanvas(cv,!!tab);if(!tab)return txt;return tab+'\n\n'+txt.split('\n').filter(l=>!/[-_=~]{3,}|\|/.test(l)).join('\n');}
+
+function binarize(cv){const c=cv.getContext('2d'),d=c.getImageData(0,0,cv.width,cv.height),p=d.data,hist=new Array(256).fill(0),n=p.length/4;
+ for(let i=0;i<p.length;i+=4){const v=(p[i]*.3+p[i+1]*.59+p[i+2]*.11)|0;p[i]=v;hist[v]++;}
+ let sum=0;for(let i=0;i<256;i++)sum+=i*hist[i];let sB=0,wB=0,mx=0,th=128;for(let i=0;i<256;i++){wB+=hist[i];if(!wB)continue;const wF=n-wB;if(!wF)break;sB+=i*hist[i];const mB=sB/wB,mF=(sum-sB)/wF,b=wB*wF*(mB-mF)*(mB-mF);if(b>mx){mx=b;th=i;}}
+ for(let i=0;i<p.length;i+=4){const v=p[i]>th?255:0;p[i]=p[i+1]=p[i+2]=v;}c.putImageData(d,0,0);}
 async function docImage(f,buf){setMsg('טוען תמונה…',false);const url=URL.createObjectURL(new Blob([buf],{type:f.type||'image/jpeg'}));
  const img=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>no('לא הצלחתי לפתוח את התמונה (נסה JPG/PNG או צילום מסך)');i.src=url;});
- const cv=prepCanvas(img,img.naturalWidth,img.naturalHeight);URL.revokeObjectURL(url);setMsg('טוען מנוע זיהוי טקסט (פעם ראשונה ~10 שניות)…',false);return await ocrCanvas(cv);}
+ const cv=prepCanvas(img,img.naturalWidth,img.naturalHeight);URL.revokeObjectURL(url);setMsg('טוען מנוע זיהוי טקסט (פעם ראשונה ~10 שניות)…',false);return await ocrDoc(cv);}
 async function docPDF(buf){setMsg('קורא PDF…',false);const lib=await getPDF();const pdf=await lib.getDocument({data:new Uint8Array(buf)}).promise;const N=Math.min(pdf.numPages,8);let txt=[];
  for(let p=1;p<=N;p++){const pg=await pdf.getPage(p);const vp=pg.getViewport({scale:1});const tc=await pg.getTextContent();
   txt.push(rebuild(tc.items.map(i=>({s:i.str,x:i.transform[4],y:vp.height-i.transform[5],w:i.width||i.str.length*Math.abs(i.transform[0])*.6,h:Math.abs(i.transform[3])||10}))));}
  const all=txt.join('\n\n');if(all.replace(/\s/g,'').length>=30)return {text:all,how:'טקסט מה-PDF'};
  const out=[];for(let p=1;p<=N;p++){setMsg('PDF סרוק — מזהה טקסט בעמוד '+p+'/'+N+'…',false);const pg=await pdf.getPage(p);const vp=pg.getViewport({scale:2.2});
-  const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,cv.width,cv.height);await pg.render({canvasContext:c,viewport:vp}).promise;out.push(await ocrCanvas(cv));}
+  const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,cv.width,cv.height);await pg.render({canvasContext:c,viewport:vp}).promise;binarize(cv);out.push(await ocrDoc(cv));}
  return {text:out.join('\n\n'),how:'זיהוי טקסט (OCR) מ-PDF סרוק'};}
 // --- chords ---
 const PCN={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
@@ -668,7 +712,7 @@ function isChordTok(t){return CHRE.test(t.replace(/[()|]/g,''))&&t.replace(/[()|
 const HEB={0:'דו',1:'דו♯',2:'רה',3:'מי♭',4:'מי',5:'פה',6:'פה♯',7:'סול',8:'לה♭',9:'לה',10:'סי♭',11:'סי'};
 function docMeta(t){let bpm=null,scale=null,title=null;const b=t.match(/(\d{2,3})\s*bpm\b/i)||t.match(/tempo\s*[:=]?\s*(\d{2,3})/i)||t.match(/[♩=]\s*=?\s*(\d{2,3})\b/);if(b&&+b[1]>=30&&+b[1]<=260)bpm=+b[1];
  const k=t.match(/\bkey\s*[:\-]?\s*([A-G])(#|b)?\s*(m|min|minor|maj|major)?\b/i);if(k){const r=(PCN[k[1].toUpperCase()]+(k[2]==='#'?1:k[2]==='b'?-1:0)+12)%12;scale=HEB[r]+(k[3]&&/^m(in)?(or)?$/i.test(k[3])?' מינור':' מז׳ור')+' (מהדף)';}
- const f=t.split('\n').map(s=>s.trim()).find(s=>s&&!isChordTok(s.split(/\s+/)[0]));if(f)title=f.replace(/\s+(chords|tab|tabs)\s+by\s+.*$/i,'').slice(0,60);return{bpm,scale,title};}
+ const f=t.split('\n').map(s=>s.trim()).find(s=>s&&!isChordTok(s.split(/\s+/)[0])&&(s.match(/[A-Za-z\u0370-\u03ff\u0590-\u05ff]{3,}/g)||[]).length>=2);if(f)title=f.replace(/\s{2,}/g,' ').replace(/\s+(chords|tab|tabs)\s+by\s+.*$/i,'').slice(0,60);return{bpm,scale,title};}
 function parseChordSheet(t){let L=t.split('\n');const si=L.findIndex(l=>/^\s*\[[^\]]+\]\s*$/.test(l));if(si>0)L=L.slice(si);
  const bars=[];for(let i=0;i<L.length;i++){const toks=L[i].trim().split(/\s+/).filter(Boolean);if(!toks.length||/^\[/.test(L[i].trim()))continue;
   const ch=toks.filter(isChordTok);if(ch.length&&ch.length/toks.length>=.6){const nx=L[i+1]||'';const nt=nx.trim().split(/\s+/).filter(Boolean);
@@ -680,7 +724,7 @@ function buildChordSong(bars,bpm){const spb=60/bpm,chords={},ev=[];let p=0;
   pat.forEach((ci,k)=>ev.push({t:+((bi*4+k*.5)*spb).toFixed(4),course:COURSES_CFAD[ci],fret:fr[ci],dur:+(.5*spb*.95).toFixed(4),pick:p++%2?'up':'down',chord:b.c,next:nxt,lyric:b.lyric}));});
  return{events:ev,chords};}
 const COURSES_CFAD=['C','F','A','D'];
-function parseDoc(t,how){t=t.replace(/\r/g,'').replace(/[–—]/g,'-');const meta=docMeta(t);let r;
+function parseDoc(t,how){t=t.replace(/\r/g,'').replace(/[–—]/g,'-');window.LASTTXT=t;const meta=docMeta(t);let r;
  try{r=parseTab(t);r.kind='טאב';}catch(e){const bars=parseChordSheet(t);r={notes:[{beat:0,dur:1,midi:60}],bars,kind:'דף אקורדים ('+bars.length+' תיבות, '+new Set(bars.map(b=>b.c)).size+' אקורדים)'};}
  r.bpm=r.bpm||meta.bpm;r.scale=r.scale||meta.scale;r.title=r.title||meta.title;r.how=how;return r;}
 function drawLyric(){if(!evs||idx<0||!evs[idx]||!evs[idx].lyric)return;const s=evs[idx].lyric;g.save();g.font='700 46px Rubik,Arial';g.textAlign='center';g.textBaseline='middle';
@@ -693,7 +737,7 @@ F|--------------|-----------------|--------------|-----------------|
 C|--------------|-----------------|--------------|-----------------|`;
 // --- modal UI ---
 let parsed=null;
-function openAdd(){parsed=null;$('afile').value='';setMsg('',false);$('addm').style.display='flex';}
+function openAdd(){parsed=null;$('afile').value='';$('atitle').value='';setMsg('',false);$('addm').style.display='flex';}
 function closeAdd(){$('addm').style.display='none';}
 function setMsg(h,bad){const m=$('amsg');m.innerHTML=h;m.style.color=bad?'#ff8b8b':'#9be39b';}
 async function analyze(){try{const f=$('afile').files[0],txt=$('atext').value.trim();let r;
@@ -729,7 +773,7 @@ function delSong(id){USER=USER.filter(s=>s.id!==id);saveUser();document.querySel
 DATA.songs.forEach(addBtn);USER.forEach(addBtn);
 $('addb').onclick=openAdd;$('acl').onclick=closeAdd;$('aan').onclick=analyze;$('ago').onclick=async()=>{try{if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();}AC.resume&&AC.resume();initAudio().catch(()=>{});}catch(e){}await addSong();};
 $('asample').onclick=()=>{$('atext').value=SAMPLE_TAB;$('afile').value='';$('atitle').value='טאב לדוגמה';$('abpm').value=100;$('ascale').value='רה חיג׳אז';analyze();};
-$('afile').onchange=()=>{parsed=null;if($('afile').files[0]){$('atext').value='';setMsg('קורא את הקובץ…',false);analyze();}};$('afile').oninput=$('afile').onchange;$('atext').oninput=()=>{parsed=null;};
+$('afile').onchange=()=>{parsed=null;if($('afile').files[0]){$('atext').value='';setMsg('קורא את הקובץ…',false);analyze();}};$('atext').oninput=()=>{parsed=null;};
 window.loadSong=json=>load(typeof json==='string'?JSON.parse(json):json);
 function fit(){const W=$('wrap');const sc=Math.min(W.clientWidth/1080,W.clientHeight/1920);$('stage').style.transform=`scale(${sc})`;}
 $('tog').onclick=()=>{$('bar').classList.toggle('open');};addEventListener('resize',fit);fit();load(DATA.songs[0]);requestAnimationFrame(step);
