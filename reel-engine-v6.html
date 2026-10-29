@@ -691,7 +691,7 @@ async function docPDF(buf){setMsg('קורא PDF…',false);const lib=await getPD
   txt.push(rebuild(tc.items.map(i=>({s:i.str,x:i.transform[4],y:vp.height-i.transform[5],w:i.width||i.str.length*Math.abs(i.transform[0])*.6,h:Math.abs(i.transform[3])||10}))));}
  const all=txt.join('\n\n');if(all.replace(/\s/g,'').length>=30)return {text:all,how:'טקסט מה-PDF'};
  const out=[];for(let p=1;p<=N;p++){setMsg('PDF סרוק — מזהה טקסט בעמוד '+p+'/'+N+'…',false);const pg=await pdf.getPage(p);const vp=pg.getViewport({scale:2.2});
-  const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,cv.width,cv.height);await pg.render({canvasContext:c,viewport:vp}).promise;binarize(cv);out.push(await ocrDoc(cv));}
+  const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,cv.width,cv.height);await pg.render({canvasContext:c,viewport:vp}).promise;out.push(await ocrDoc(prepCanvas(cv,cv.width,cv.height)));}
  return {text:out.join('\n\n'),how:'זיהוי טקסט (OCR) מ-PDF סרוק'};}
 // --- chords ---
 const PCN={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
