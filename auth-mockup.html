@@ -1,0 +1,72 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bouzouki Academy · הרשמה וכניסה (MOCKUP)</title>
+<style>
+*{box-sizing:border-box;margin:0}body{background:#0c0c0e;color:#f2eee6;font-family:-apple-system,"Segoe UI",Arial,sans-serif;min-height:100vh;overflow-x:hidden}
+.mk{position:fixed;top:0;left:0;right:0;z-index:9;background:#ff7a00;color:#000;text-align:center;font:700 12px sans-serif;padding:3px}
+.scr{display:none;min-height:100vh;padding:44px 22px 70px;flex-direction:column;position:relative}.scr.on{display:flex}
+.neck{position:absolute;left:0;right:0;top:0;height:170px;opacity:.35;pointer-events:none}
+.glass{background:rgba(28,28,32,.72);backdrop-filter:blur(14px);border:1px solid rgba(255,200,120,.18);border-radius:20px;padding:20px;margin-top:14px}
+h1{font-size:28px;color:#f5c26b;margin:8px 0}h2{font-size:22px;color:#f5c26b;margin-bottom:10px}p{color:#bdb6aa;line-height:1.5}
+input{width:100%;padding:14px;margin:7px 0;border-radius:12px;border:1px solid #3a3530;background:#141416;color:#fff;font-size:16px;text-align:right}
+.b{display:block;width:100%;padding:14px;margin:8px 0;border-radius:14px;border:0;font-size:16px;font-weight:700;cursor:pointer}
+.pri{background:linear-gradient(90deg,#ff7a00,#f5c26b);color:#111}.sec{background:#1c1c20;color:#f5c26b;border:1px solid #f5c26b55}
+.apple{background:#fff;color:#000}.google{background:#fff;color:#333}
+a{color:#f5c26b}.lnk{background:none;border:0;color:#f5c26b;font-size:14px;margin-top:6px;cursor:pointer}
+.cr{position:absolute;bottom:12px;left:0;right:0;text-align:center;font-size:11px;color:#8a8378}
+.logo{width:120px;height:120px;border-radius:28px;margin:0 auto;display:block;box-shadow:0 0 40px #ff7a0066}
+.ball{width:18px;height:18px;border-radius:50%;background:#ff7a00;box-shadow:0 0 14px #ff7a00}
+.tabs{position:fixed;bottom:0;left:0;right:0;display:flex;background:rgba(20,20,22,.95);border-top:1px solid #f5c26b33;z-index:5}
+.tabs button{flex:1;background:none;border:0;color:#8a8378;padding:10px 0 22px;font-size:12px}.tabs button.on{color:#ff7a00}
+.pane{display:none}.pane.on{display:block}.song{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #2a2622}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#ff7a00;color:#000;padding:8px 16px;border-radius:20px;display:none;z-index:10}
+</style></head><body>
+<div class="mk">MOCKUP · דוגמה בלבד – אין שרת אמיתי</div>
+<svg width="0" height="0"><defs><g id="nk"><rect x="0" y="40" width="400" height="90" fill="#6b4423"/><rect x="380" y="40" width="10" height="90" fill="#efe4c8"/>
+<g stroke="#c9c9c9" stroke-width="2"><line x1="330" y1="40" x2="330" y2="130"/><line x1="275" y1="40" x2="275" y2="130"/><line x1="225" y1="40" x2="225" y2="130"/><line x1="180" y1="40" x2="180" y2="130"/><line x1="138" y1="40" x2="138" y2="130"/><line x1="100" y1="40" x2="100" y2="130"/><line x1="65" y1="40" x2="65" y2="130"/><line x1="32" y1="40" x2="32" y2="130"/></g>
+<g stroke="#ddd" stroke-width="1"><line x1="0" y1="55" x2="400" y2="55"/><line x1="0" y1="59" x2="400" y2="59"/><line x1="0" y1="78" x2="400" y2="78"/><line x1="0" y1="82" x2="400" y2="82"/><line x1="0" y1="101" x2="400" y2="101"/><line x1="0" y1="105" x2="400" y2="105"/><line x1="0" y1="124" x2="400" y2="124"/><line x1="0" y1="120" x2="400" y2="120"/></g>
+<circle cx="250" cy="91" r="5" fill="#efe4c8"/><circle cx="159" cy="91" r="5" fill="#efe4c8"/><circle cx="202" cy="80" r="9" fill="#ff7a00"/></g></defs></svg>
+
+<section class="scr on" id="splash" style="justify-content:center;text-align:center"><svg class="neck" viewBox="0 0 400 170" preserveAspectRatio="none"><use href="#nk"/></svg>
+<img class="logo" src="bs-monogram.png" alt="bs"><h1>Bouzouki Academy</h1><p>ללמוד בוזוקי – צליל אחרי צליל</p><div class="ball" style="margin:24px auto"></div>
+<div class="cr">bs-simple.com · פתרונות יצירתיים · בועז סעדה</div></section>
+
+<section class="scr" id="welcome"><svg class="neck" viewBox="0 0 400 170" preserveAspectRatio="none"><use href="#nk"/></svg>
+<div style="margin-top:150px"><h1>ברוך הבא 👋</h1><p>ויזואלייזר, מלמד שירים ושמירת השירים שלך בכל המכשירים.</p></div>
+<div class="glass"><button class="b pri" onclick="go('signup')">הרשמה</button><button class="b sec" onclick="go('login')">כניסה</button></div>
+<div class="cr">bs-simple.com · פתרונות יצירתיים · בועז סעדה</div></section>
+
+<section class="scr" id="signup"><button class="lnk" style="align-self:flex-start" onclick="go('welcome')">→ חזרה</button><h2>יצירת חשבון</h2>
+<div class="glass"><button class="b apple" onclick="login()"> המשך עם Apple</button><button class="b google" onclick="login()">G  המשך עם Google</button>
+<p style="text-align:center;margin:8px">או</p><input placeholder="שם מלא"><input placeholder="אימייל" type="email"><input placeholder="סיסמה" type="password">
+<button class="b pri" onclick="login()">הרשמה</button><p style="font-size:12px">בהרשמה אני מסכים/ה ל<a href="#">תנאי השימוש</a> ול<a href="#">מדיניות הפרטיות</a></p></div>
+<div class="cr">bs-simple.com · פתרונות יצירתיים · בועז סעדה</div></section>
+
+<section class="scr" id="login"><button class="lnk" style="align-self:flex-start" onclick="go('welcome')">→ חזרה</button><h2>כניסה</h2>
+<div class="glass"><button class="b apple" onclick="login()"> כניסה עם Apple</button><button class="b google" onclick="login()">G  כניסה עם Google</button>
+<input placeholder="אימייל" type="email"><input placeholder="סיסמה" type="password"><button class="b pri" onclick="login()">כניסה</button>
+<button class="lnk" onclick="go('forgot')">שכחתי סיסמה</button></div>
+<p style="margin-top:12px;font-size:12px"><a href="#">פרטיות</a> · <a href="#">תנאים</a></p><div class="cr">bs-simple.com · פתרונות יצירתיים · בועז סעדה</div></section>
+
+<section class="scr" id="forgot"><button class="lnk" style="align-self:flex-start" onclick="go('login')">→ חזרה</button><h2>איפוס סיסמה</h2>
+<div class="glass"><p>נשלח לך קישור לאיפוס לאימייל.</p><input placeholder="אימייל" type="email"><button class="b pri" onclick="toast('📧 (דמו) קישור איפוס נשלח');setTimeout(()=>go('login'),1200)">שליחת קישור</button></div>
+<div class="cr">bs-simple.com · פתרונות יצירתיים · בועז סעדה</div></section>
+
+<section class="scr" id="home"><svg class="neck" viewBox="0 0 400 170" preserveAspectRatio="none" style="height:110px"><use href="#nk"/></svg>
+<div style="margin-top:90px"><h2>שלום, בועז 🎶</h2></div>
+<div class="pane on" id="p0"><div class="glass"><h2>ויזואלייזר</h2><p>סולמות, מקאמים ודרומוי, אקורדים ושכבות A/B על הצוואר.</p><a class="b pri" style="text-align:center;text-decoration:none" id="vlink" href="visualizer-v10.html">פתיחת הוויזואלייזר</a></div></div>
+<div class="pane" id="p1"><div class="glass"><h2>מלמד השירים</h2><p>טאב יורד, כדור כתום, אקורד נוכחי ובא. רגיל · איטי · ליווי.</p><a class="b pri" style="text-align:center;text-decoration:none" href="reel-engine-v11.html">פתיחת מלמד השירים</a></div></div>
+<div class="pane" id="p2"><div class="glass"><h2>השירים שלי</h2><div class="song"><span>הבאנו שלום עליכם</span><span>☁️ מסונכרן</span></div><div class="song"><span>Αθήνα μου</span><span>☁️ מסונכרן</span></div><div class="song"><span>זורבה</span><span>☁️ מסונכרן</span></div>
+<p style="font-size:12px;margin-top:10px">השירים נשמרים בחשבון ומסתנכרנים בין אייפון לאייפד (בגרסה האמיתית).</p></div></div>
+<div class="pane" id="p3"><div class="glass"><h2>פרופיל</h2><p>בועז סעדה · boaz@example.com</p><p>מנוי: חינם</p><p style="margin-top:8px"><a href="#">מדיניות פרטיות</a> · <a href="#">תנאי שימוש</a></p>
+<button class="b sec" onclick="toast('(דמו) מחיקת חשבון – נדרש ע״י אפל')">מחיקת חשבון</button><button class="b sec" onclick="go('welcome')">יציאה</button></div>
+<p class="cr" style="position:static;margin-top:16px">bs-simple.com · פתרונות יצירתיים · בועז סעדה</p></div>
+<nav class="tabs"><button class="on" onclick="tab(0)">🎸<br>ויזואלייזר</button><button onclick="tab(1)">🎵<br>שירים</button><button onclick="tab(2)">⭐<br>השירים שלי</button><button onclick="tab(3)">👤<br>פרופיל</button></nav></section>
+<div class="toast" id="t"></div>
+<script>
+function go(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id==id));scrollTo(0,0)}
+function login(){toast('(דמו) נכנסת בהצלחה');setTimeout(()=>go('home'),700)}
+function tab(i){document.querySelectorAll('.pane').forEach((p,j)=>p.classList.toggle('on',i==j));document.querySelectorAll('.tabs button').forEach((b,j)=>b.classList.toggle('on',i==j))}
+function toast(m){const t=document.getElementById('t');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',1500)}
+fetch('visualizer-v10.html',{method:'HEAD'}).then(r=>{if(!r.ok)vlink.href='visualizer-v9.html'}).catch(()=>vlink.href='visualizer-v9.html');
+const q=new URLSearchParams(location.search).get('s');if(q){go(q);const t=new URLSearchParams(location.search).get('t');if(t)tab(+t)}else setTimeout(()=>{if(document.getElementById('splash').classList.contains('on'))go('welcome')},2000);
+</script></body></html>
