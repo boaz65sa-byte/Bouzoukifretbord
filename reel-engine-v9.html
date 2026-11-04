@@ -159,7 +159,7 @@ let NOW=0;function step(now){NOW=now;const dt=Math.min(.1,(now-last_t)/1000);las
  // pan neck for high frets
  const look=evs.slice(Math.max(0,idx),idx+4).map(e=>fx(e.fret));const mx=look.length?Math.max(...look):0;
  X0t=Math.max(0,Math.min(NUT+NF*FH+40-VIEWPX,mx+FH-VIEWPX));X0+=(X0t-X0)*Math.min(1,dt*6);
- bg();drawNeck();drawDot();drawNoteTag();drawTab();drawChords();drawLyric();requestAnimationFrame(step);}
+ bg();drawNeck();drawDot();drawTab();drawChords();drawNoteTag();drawLyric();requestAnimationFrame(step);}
 // ---- UI ----
 const $=id=>document.getElementById(id),btn=$('play');
 function setBtn(){btn.textContent=playing?'❚❚':'▶';}
