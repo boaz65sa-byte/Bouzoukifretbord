@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>לוח סאונד · דוגמה לאישור</title>
+<style>
+:root{
+  --bg:#0b0c10; --card:#16181f; --line:#2a2d38; --gold:#e8b84a; --ink:#f3efe6; --mute:#9aa0b4;
+  --ok:#3dd68c; --accent:#ff8a3d;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:14px 14px 92px}
+.badge{display:inline-block;background:#3a2a0a;color:var(--gold);border:1px solid #6a5018;border-radius:999px;padding:4px 10px;font-size:12px;margin-bottom:8px}
+h1{font-size:22px;margin:0 0 6px}
+.sub{color:var(--mute);font-size:14px;margin:0 0 16px;line-height:1.5}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.chip,.btn{border:1px solid var(--line);background:#12141a;color:var(--ink);border-radius:12px;padding:8px 12px;font-size:14px;cursor:pointer}
+.chip.on,.btn.on{border-color:var(--gold);background:#2a210c;color:var(--gold)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.panel h2{font-size:15px;margin:0 0 10px;color:var(--gold)}
+.neck{height:88px;border-radius:12px;background:linear-gradient(#6a4224,#3a2414);position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-around;padding:10px 12px}
+.string{height:3px;background:linear-gradient(90deg,#d9c48a,#f4e7b8);border-radius:2px;opacity:.9}
+.fret{position:absolute;top:0;bottom:0;width:2px;background:rgba(220,220,220,.45)}
+.meta{display:flex;justify-content:space-between;color:var(--mute);font-size:13px;margin-top:8px}
+.chain{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.pedal{min-width:92px;background:#101218;border:1px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center;font-size:13px}
+.pedal b{display:block;margin-bottom:6px}
+.led{width:10px;height:10px;border-radius:50%;margin:0 auto 6px;background:#333}
+.pedal.on{border-color:#6a5018}
+.pedal.on .led{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+label.k{font-size:12px;color:var(--mute);display:block;margin-bottom:4px}
+input[type=range]{width:100%}
+.val{float:left;color:var(--gold);font-size:12px}
+.presets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.preset{background:#101218;border:1px solid var(--line);border-radius:12px;padding:12px 8px;text-align:center;font-size:13px}
+.preset.on{border-color:var(--gold);color:var(--gold)}
+.dock{position:fixed;bottom:0;right:0;left:0;background:#11131a;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:10px 8px calc(10px + env(safe-area-inset-bottom));}
+.foot{min-width:64px;text-align:center;font-size:12px;color:var(--mute)}
+.foot span{display:block;width:46px;height:46px;border-radius:50%;border:2px solid #444;margin:0 auto 4px;line-height:42px;color:var(--ink);background:#1a1c24}
+.foot.on span{border-color:var(--gold);color:var(--gold)}
+.credit{margin-top:8px;font-size:12px;color:var(--mute)}
+.credit a{color:var(--gold)}
+.note{font-size:12px;color:var(--mute);line-height:1.45;margin-top:8px}
+@media(max-width:520px){.presets{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="badge">דוגמה לאישור · לא עותק של The eBaglama · אין עיבוד סאונד אמיתי עדיין</div>
+  <h1>לוח סאונד לבמה</h1>
+  <p class="sub">בחרו כלי, פריסט וסצנה. השרשרת משותפת לבוזוקי ולבגלמה, והכיוון, מספר המיתרים והפריסטים משתנים לפי הכלי.</p>
+
+  <div class="panel">
+    <h2>כלי</h2>
+    <div class="row" id="instRow">
+      <button class="chip on" data-inst="bouz">בוזוקי · 4 זוגות · C F A D</button>
+      <button class="chip" data-inst="bagS">בגלמה קצרה · 3 מקהלות · G D A</button>
+      <button class="chip" data-inst="bagL">בגלמה ארוכה · 3 מקהלות · A D G</button>
+    </div>
+    <div class="neck" id="neck"></div>
+    <div class="meta"><span id="instName">בוזוקי טטרכורדו</span><span id="tune">כיוון C-F-A-D</span></div>
+  </div>
+
+  <div class="panel">
+    <h2>פריסט לפי סגנון</h2>
+    <div class="presets" id="presets"></div>
+  </div>
+
+  <div class="panel">
+    <h2>טרנספוז כמו קאפו</h2>
+    <div class="grid">
+      <div>
+        <label class="k">חצאי טונים <span class="val" id="trVal">0</span></label>
+        <input type="range" id="tr" min="-12" max="12" value="0">
+      </div>
+      <div>
+        <label class="k">מצב</label>
+        <div class="row">
+          <button class="chip on" id="live">חי · מהיר</button>
+          <button class="chip" id="prec">מדויק</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>שרשרת הסאונד</h2>
+    <div class="chain" id="chain"></div>
+    <p class="note">סדר לדוגמה בלבד: כניסה, התאמת פיקאפ, טרנספוז, קומפרסור, דרייב, מגבר, וואה, דיליי, הד, יציאה. אפשר לכבות שלב בלי להרוס את שאר האפליקציה.</p>
+  </div>
+
+  <div class="panel">
+    <h2>ארבע סצנות לשיר</h2>
+    <div class="row" id="scenes">
+      <button class="btn on">1 · פתיחה</button>
+      <button class="btn">2 · בית</button>
+      <button class="btn">3 · סולו</button>
+      <button class="btn">4 · סיום</button>
+    </div>
+  </div>
+
+  <p class="credit"><a href="https://bs-simple.com">bs-simple.com · פתרונות יצירתיים · בועז סעדה</a></p>
+</div>
+<div class="dock">
+  <div class="foot on"><span>A</span>שיר</div>
+  <div class="foot"><span>B</span>סצנה</div>
+  <div class="foot"><span>C</span>טיילי</div>
+  <div class="foot"><span>D</span>הד קפוא</div>
+</div>
+<script>
+const DATA = {
+  bouz: {
+    name: "בוזוקי טטרכורדו",
+    tune: "כיוון C-F-A-D",
+    strings: 4,
+    presets: ["רבטיקו נקי","זייבקיקו","חסאפיקו","סולו ליד","ערבסק","במה חיה"]
+  },
+  bagS: {
+    name: "בגלמה קצרה (kısa sap)",
+    tune: "כיוון G-D-A · אפשר רבעי טון בסריגים",
+    strings: 3,
+    presets: ["עממי נקי","חלאי","ערבסק","אוזון האווה","סולו ליד","במה חיה"]
+  },
+  bagL: {
+    name: "בגלמה ארוכה (uzun sap)",
+    tune: "כיוון A-D-G · אפשר רבעי טון בסריגים",
+    strings: 3,
+    presets: ["עממי נקי","חלאי","ערבסק","אוזון האווה","סולו ליד","במה חיה"]
+  }
+};
+const STAGES = ["כניסה","פיקאפ","טרנספוז","לחץ","דרייב","מגבר","וואה","השהיה","הד","יציאה"];
+const onStages = new Set(["כניסה","פיקאפ","טרנספוז","מגבר","הד","יציאה"]);
+function drawNeck(n){
+  const el = document.getElementById("neck");
+  el.innerHTML = "";
+  for(let i=0;i<n;i++){ const s=document.createElement("div"); s.className="string"; el.appendChild(s); }
+  [18,32,46,60,72,82].forEach(p=>{ const f=document.createElement("div"); f.className="fret"; f.style.right=p+"%"; el.appendChild(f); });
+}
+function render(key){
+  const d = DATA[key];
+  document.getElementById("instName").textContent = d.name;
+  document.getElementById("tune").textContent = d.tune;
+  drawNeck(d.strings);
+  const box = document.getElementById("presets");
+  box.innerHTML = "";
+  d.presets.forEach((name,i)=>{
+    const b=document.createElement("button");
+    b.className = "preset"+(i===0?" on":"");
+    b.textContent = name;
+    b.onclick=()=>{ box.querySelectorAll(".preset").forEach(x=>x.classList.remove("on")); b.classList.add("on"); };
+    box.appendChild(b);
+  });
+}
+document.getElementById("instRow").addEventListener("click", e=>{
+  const btn = e.target.closest("[data-inst]"); if(!btn) return;
+  document.querySelectorAll("#instRow .chip").forEach(x=>x.classList.remove("on"));
+  btn.classList.add("on");
+  render(btn.dataset.inst);
+});
+document.getElementById("chain").innerHTML = STAGES.map(n=>`<div class="pedal ${onStages.has(n)?"on":""}"><div class="led"></div><b>${n}</b>לחיצה</div>`).join("");
+document.getElementById("chain").addEventListener("click", e=>{
+  const p=e.target.closest(".pedal"); if(!p) return; p.classList.toggle("on");
+});
+document.getElementById("tr").oninput = e=> document.getElementById("trVal").textContent = (e.target.value>0?"+":"")+e.target.value;
+document.getElementById("live").onclick = ()=>{ live.classList.add("on"); prec.classList.remove("on"); };
+document.getElementById("prec").onclick = ()=>{ prec.classList.add("on"); live.classList.remove("on"); };
+document.getElementById("scenes").addEventListener("click", e=>{
+  const b=e.target.closest(".btn"); if(!b) return;
+  document.querySelectorAll("#scenes .btn").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+});
+render("bouz");
+</script>
+</body>
+</html>
