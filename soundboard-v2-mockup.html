@@ -1,0 +1,119 @@
+<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>לוח סאונד v2 · בוזוקי / בגלמה (דוגמה לאישור)</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#05070b;color:#cfd6e4;font:13px -apple-system,Rubik,Arial,sans-serif}
+#win{max-width:1318px;margin:0 auto;background:linear-gradient(#0d1220,#070a12);border:1px solid #1e2638;min-height:100dvh;display:flex;flex-direction:column}
+.ttl{display:flex;justify-content:space-between;align-items:center;padding:4px 10px;background:#0a0d16;border-bottom:1px solid #1e2638;font-weight:700;color:#fff}
+.top{display:flex;align-items:center;gap:14px;padding:8px 12px;flex-wrap:wrap;direction:ltr}
+.logo{font:italic 800 22px Georgia,serif;color:#6fb6ff}.logo small{display:block;font:11px Arial;color:#ff8a3d;font-style:normal}
+.tabs{display:flex;gap:2px;background:#0a0e18;border:1px solid #263049;border-radius:20px;padding:3px}
+.tab{padding:7px 14px;border-radius:16px;border:0;background:none;color:#cfd6e4;font:700 11px Arial;letter-spacing:.5px;cursor:pointer;min-height:34px}
+.tab.on{background:#1a1608;color:#f0b43a;box-shadow:0 0 0 1px #f0b43a inset}
+.meters{display:flex;flex-direction:column;gap:3px;font:9px Arial;color:#7a8499}.mt{display:inline-block;width:200px;height:5px;background:#1a2030;border-radius:3px;overflow:hidden}.mt i{display:block;height:100%;width:0;background:linear-gradient(90deg,#3c9,#fc3,#f44)}
+.scn{margin-left:auto;display:flex;gap:4px;align-items:center}.sb{width:28px;height:28px;border-radius:6px;border:1px solid #3a4460;background:#0e1322;color:#ccc;font:700 12px Arial}.sb.on{background:#f0b43a;color:#000}
+.pill{padding:6px 10px;border-radius:7px;border:1px solid #f0b43a;background:#1a1608;color:#f0b43a;font:700 11px Arial;min-height:30px}.pill.red{border-color:#e33;color:#f66;background:#200a0a}.pill.red.on{background:#e33;color:#fff}
+.body{display:grid;grid-template-columns:230px 1fr;gap:10px;padding:0 10px 10px;direction:ltr;flex:1}
+.panel{background:#0b0f1a;border:1px solid #232c42;border-radius:8px;padding:8px}
+.ph{display:flex;justify-content:space-between;align-items:center;font:700 11px Arial;color:#fff;margin-bottom:6px}
+.cat{display:flex;justify-content:space-between;padding:6px 8px;margin:2px 0;background:#111726;border-radius:4px;color:#f0b43a;font:700 10px Arial;cursor:pointer}
+.pr{padding:5px 18px;font-size:12px;cursor:pointer;color:#cfd6e4;direction:rtl;text-align:right}.pr.on{color:#fff;background:#1c2540;border-radius:4px}
+.fx{display:flex;align-items:center;gap:8px;padding:4px 6px;margin:3px 0;border:1px solid #1f2840;border-radius:6px;background:#0e1322;cursor:pointer}.fx.sel{border-color:#cfd6e4}
+.ic{width:30px;height:20px;border-radius:4px}.fx b{flex:1;font:700 10px Arial;color:#dfe5f0}.pw{width:24px;height:24px;border-radius:50%;border:2px solid #556;background:none;color:#556;font-size:12px;padding:0}.pw.on{border-color:#e9eef8;color:#e9eef8}
+.mid{display:grid;grid-template-columns:260px 1fr;gap:10px}
+.inst{position:relative;border-radius:8px;background:radial-gradient(#1a2135,#070a12 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px}
+.sw{display:flex;gap:0;border:1px solid #f0b43a;border-radius:20px;overflow:hidden;margin:8px;direction:rtl}.sw button{border:0;background:none;color:#f0b43a;padding:8px 18px;font:700 14px inherit;font-family:inherit;min-height:40px}.sw button.on{background:#f0b43a;color:#000}
+.mods{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-content:start}
+.mod{background:#0b0f1a;border:1px solid #232c42;border-radius:8px;padding:10px}.mod.off{opacity:.45}
+.kr{display:flex;justify-content:space-around;flex-wrap:wrap;gap:6px}
+.k{display:flex;flex-direction:column;align-items:center;font:9px Arial;color:#8a94a8;touch-action:none;user-select:none}
+.kn{width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3a4152,#0d1018 70%);border:2px solid #222a3a;position:relative;cursor:ns-resize;box-shadow:0 0 0 3px #10151f}
+.kn:after{content:'';position:absolute;left:50%;top:4px;width:3px;height:13px;margin-left:-1.5px;background:#e9eef8;border-radius:2px}
+.kv{color:#cfd6e4;font-size:10px}.kl{margin-top:4px;font-weight:700;letter-spacing:.5px}
+.tun{text-align:center}.gauge{height:70px;position:relative;border-bottom:1px solid #334}.needle{position:absolute;left:50%;bottom:0;width:2px;height:64px;background:#fff;transform-origin:bottom}
+.ped{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.pd{border:1px solid #2a3450;border-radius:8px;padding:8px;display:flex;justify-content:space-between;align-items:center;direction:rtl;cursor:pointer}.pd.on{border-color:#f0b43a}
+.ft{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ddd,#666);border:2px solid #333}
+.stomps{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;text-align:center}.st{display:flex;flex-direction:column;align-items:center;gap:4px;font:700 10px Arial;cursor:pointer}.st i{width:26px;height:4px;border-radius:2px;background:#333}.st.on i{box-shadow:0 0 8px currentColor;background:currentColor}.st.on .ft{box-shadow:0 0 0 3px currentColor}
+.view{display:none}.view.on{display:block}
+.ctl{display:flex;gap:6px;flex-wrap:wrap;direction:rtl;margin-top:8px}.ctl button{min-height:40px;border-radius:8px;border:1px solid #f0b43a;background:#1a1608;color:#f0b43a;font:700 13px inherit;font-family:inherit;padding:0 12px}
+#cr{text-align:center;padding:8px 0 calc(8px + env(safe-area-inset-bottom));font-size:12px}#cr a{color:#f0b43a}
+.tag{background:#ff7a00;color:#000;border-radius:6px;padding:1px 7px;font-size:11px}
+table{width:100%;border-collapse:collapse;direction:rtl}td,th{padding:8px;border-bottom:1px solid #1f2840;text-align:right}
+@media(max-width:820px){.body{grid-template-columns:1fr}.mid{grid-template-columns:1fr}.mods{grid-template-columns:1fr}.ped{grid-template-columns:1fr 1fr}.stomps{grid-template-columns:repeat(6,1fr)}.inst{min-height:300px}.meters{display:none}.left{order:2}}
+</style></head><body><div id="win">
+<div class="ttl"><span class="tag">דוגמה לאישור</span><span>BS Soundboard v2</span><span>✕</span></div>
+<div class="top"><div class="logo">BS Strings<small>בוזוקי · בגלמה</small></div>
+<div class="tabs" id="tabs"></div>
+<div class="meters"><div>IN <span class="mt"><i id="mi"></i></span></div><div>OUT <span class="mt"><i id="mo"></i></span></div></div>
+<div class="scn"><span style="font:9px Arial;color:#7a8499">SCENE</span><span id="scenes"></span><button class="pill" id="stage">STAGE</button><button class="pill red" id="mute">MUTE</button></div></div>
+<div class="body">
+<div class="left">
+ <div class="panel" style="margin-bottom:10px"><div class="ph"><span>PRESETS</span><span>🔍</span></div><div id="tree" style="max-height:260px;overflow:auto"></div></div>
+ <div class="panel"><div class="ph"><span>SIGNAL CHAIN</span><span style="color:#7a8499" id="cnt"></span></div><div id="chain"></div></div>
+</div>
+<div class="right">
+ <div class="view on" data-v="PRESETS"><div class="mid">
+  <div class="inst"><div class="sw"><button data-i="bouzouki" class="on">בוזוקי</button><button data-i="baglama">בגלמה</button></div><div id="svg"></div><div id="iname" style="color:#f0b43a;font:italic 16px Georgia;margin:6px"></div></div>
+  <div class="mods" id="mods"></div></div>
+  <div class="panel" style="margin-top:10px"><div class="ph"><span>PRESET PEDALS · BANK 01</span><span style="color:#7a8499">לחיצה = טעינת פריסט</span></div><div class="ped" id="peds"></div></div>
+  <div class="panel" style="margin-top:10px"><div class="stomps" id="stomps"></div></div>
+  <div class="ctl"><button id="demo">▶ נגן צליל הדגמה</button><button id="save">שמור פריסט</button><button id="load">טען פריסט</button><span id="msg" style="align-self:center;color:#8a94a8"></span></div>
+ </div>
+ <div class="view" data-v="SIGNAL CHAIN"><div class="panel"><div class="ph"><span>SIGNAL CHAIN</span></div><div id="flow" style="display:flex;flex-wrap:wrap;gap:8px;direction:ltr"></div><p style="direction:rtl">גרירה לשינוי סדר האפקטים תהיה בגרסה האמיתית. כאן רואים את השרשרת לפי הסדר, ומדליקים/מכבים.</p></div></div>
+ <div class="view" data-v="AMP/CAB"><div class="mods" style="grid-template-columns:1fr 1fr"><div class="mod"><div class="ph"><span>PREAMP</span></div><div class="kr" data-m="amp"></div></div><div class="mod"><div class="ph"><span>CABINET</span></div><p style="direction:rtl">בחירת ארון: 1x12 Open · 2x10 Folk · Direct (ללא ארון)</p><div class="kr" data-m="cab"></div></div></div></div>
+ <div class="view" data-v="SETLIST"><div class="panel"><div class="ph"><span>SETLIST</span></div><table><tr><th>#</th><th>שיר</th><th>פריסט</th><th>BPM</th></tr><tr><td>1</td><td>פתיחה</td><td>Laiko Warm</td><td>96</td></tr><tr><td>2</td><td>שיר מהיר</td><td>Folk Bright</td><td>132</td></tr><tr><td>3</td><td>סולו</td><td>Lead Sing</td><td>110</td></tr><tr><td>4</td><td>סיום</td><td>Studio Air</td><td>80</td></tr></table></div></div>
+ <div class="view" data-v="SETTINGS"><div class="panel" style="direction:rtl"><div class="ph"><span>SETTINGS</span></div><p>כרטיס קול: ברירת מחדל · קצב דגימה 48kHz · Buffer 128</p><p>MIDI: ללא · כיוון: A4 = 440 Hz</p><p>שפה: עברית</p></div></div>
+</div></div>
+<div id="cr"><a href="https://bs-simple.com" target="_blank">bs-simple.com · פתרונות יצירתיים · בועז סעדה</a></div></div>
+<script>
+const $=s=>document.querySelector(s),E=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+const TABS=['PRESETS','SIGNAL CHAIN','AMP/CAB','SETLIST','SETTINGS'];
+TABS.forEach((t,i)=>{const b=E('button','tab'+(i?'':' on'),t);b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.dataset.v===t));};$('#tabs').append(b);});
+[1,2,3,4].forEach(n=>{const b=E('button','sb'+(n===1?' on':''),n);b.onclick=()=>{document.querySelectorAll('.sb').forEach(x=>x.classList.toggle('on',x===b));};$('#scenes').append(b);});
+$('#stage').onclick=e=>e.target.classList.toggle('on');$('#mute').onclick=e=>{e.target.classList.toggle('on');S.mute=e.target.classList.contains('on');};
+const TREE={'CUSTOM PRESETS':['+ פריסט ריק חדש'],'CLEAN':['Clean Pure','Clean Sparkle'],'LAIKO & REBETIKO':['Laiko Warm','Rebetiko Room'],'FOLK':['Folk Bright','Folk Village'],'CRUNCH':['Crunch Light'],'DRIVE':['Drive Taverna'],'LEAD & SOLO':['Lead Sing','Solo Echo'],'ACOUSTIC & STUDIO':['Studio Air','Acoustic Body']};
+const CH=[['NOISE GATE','#8a93a6'],['WAH','#e0558a'],['COMPRESSOR','#a46be8'],['SATURATOR','#a46be8'],['EQ','#4c8de8'],['PARA EQ','#2fb7c9'],['OCTAVE','#e8834c'],['PREAMP / CAB','#d8b43c'],['PHASER','#e8775c'],['MODULATION','#34c3b0'],['ROTARY','#e8964c'],['DELAY','#45c46a'],['REVERB','#8a5ce8'],['OUTPUT','#cfd6e4']];
+const DEF={inst:'bouzouki',name:'Clean Pure',mute:false,on:{},k:{tune:0,'eq.low':0,'eq.mid':0,'eq.freq':900,'eq.high':0,'cmp.thresh':-12,'cmp.out':0,'cmp.tone':0,'cmp.blend':100,'dly.mix':18,'dly.time':350,'dly.fb':30,'rev.mix':25,'rev.decay':2.4,'rev.size':50,'amp.gain':30,'amp.bass':0,'amp.treble':0,'cab.room':20}};
+CH.forEach(([n])=>DEF.on[n]=!['WAH','SATURATOR','OCTAVE','PHASER','ROTARY'].includes(n));
+let S=JSON.parse(JSON.stringify(DEF));
+const PRESETS={'Clean Pure':{},'Clean Sparkle':{'eq.high':5},'Laiko Warm':{'eq.low':3,'eq.high':-2,'rev.mix':35},'Rebetiko Room':{'rev.mix':45,'rev.size':70},'Folk Bright':{'eq.high':6,'eq.mid':2},'Folk Village':{'rev.mix':30,'dly.mix':10},'Crunch Light':{'amp.gain':55},'Drive Taverna':{'amp.gain':80,'eq.mid':4},'Lead Sing':{'dly.mix':35,'dly.fb':45,'cmp.thresh':-20},'Solo Echo':{'dly.mix':50,'dly.time':480},'Studio Air':{'rev.mix':20,'rev.size':30},'Acoustic Body':{'eq.low':4,'amp.gain':10}};
+function applyPreset(n){if(n.startsWith('+')){S=JSON.parse(JSON.stringify(DEF));S.name='פריסט חדש';}else{const inst=S.inst;S=JSON.parse(JSON.stringify(DEF));S.inst=inst;Object.assign(S.k,PRESETS[n]);S.name=n;}render();}
+function tree(){const t=$('#tree');t.innerHTML='';for(const c in TREE){const h=E('div','cat',`<span>▾ ${c}</span><span style="color:#7a8499">${TREE[c].length}</span>`);const box=E('div');h.onclick=()=>box.hidden=!box.hidden;t.append(h,box);TREE[c].forEach(p=>{const d=E('div','pr'+(p===S.name?' on':''),p);d.onclick=()=>applyPreset(p);box.append(d);});}}
+function chain(){const c=$('#chain');c.innerHTML='';CH.forEach(([n,col])=>{const r=E('div','fx',`<span class="ic" style="background:${col}"></span><b>${n}</b>`);const p=E('button','pw'+(S.on[n]?' on':''),'⏻');p.onclick=ev=>{ev.stopPropagation();S.on[n]=!S.on[n];render();};r.append(p);c.append(r);});
+ $('#cnt').textContent=CH.filter(([n])=>S.on[n]).length+' / '+CH.length+' ON';const f=$('#flow');f.innerHTML='';CH.forEach(([n,col],i)=>f.append(E('div','fx'+(S.on[n]?'':' off'),`<span class="ic" style="background:${col}"></span><b>${n}</b>${i<CH.length-1?' →':''}`)));}
+const KN={eq:[['LOW','eq.low',-12,12,'dB'],['MID','eq.mid',-12,12,'dB'],['MID FREQ','eq.freq',200,4000,'Hz'],['HIGH','eq.high',-12,12,'dB']],cmp:[['THRESH','cmp.thresh',-40,0,'dB'],['OUTPUT','cmp.out',-12,12,'dB'],['TONE','cmp.tone',-5,5,''],['BLEND','cmp.blend',0,100,'%']],dly:[['MIX','dly.mix',0,100,'%'],['TIME','dly.time',50,1000,'ms'],['FEEDBACK','dly.fb',0,90,'%']],rev:[['MIX','rev.mix',0,100,'%'],['DECAY','rev.decay',.3,8,'s'],['SIZE','rev.size',0,100,'%']],amp:[['GAIN','amp.gain',0,100,''],['BASS','amp.bass',-12,12,'dB'],['TREBLE','amp.treble',-12,12,'dB']],cab:[['ROOM','cab.room',0,100,'%']]};
+function knob(l,key,mn,mx,u){const w=E('div','k');const kn=E('div','kn');const v=E('div','kv');const set=()=>{const p=(S.k[key]-mn)/(mx-mn);kn.style.transform=`rotate(${-135+270*p}deg)`;v.textContent=(Math.abs(S.k[key])<10&&mx<=10?(+S.k[key]).toFixed(1):Math.round(S.k[key]))+' '+u;};
+ let y0,s0;kn.onpointerdown=e=>{kn.setPointerCapture(e.pointerId);y0=e.clientY;s0=S.k[key];};kn.onpointermove=e=>{if(y0==null)return;S.k[key]=Math.max(mn,Math.min(mx,s0+(y0-e.clientY)/150*(mx-mn)));set();upd();};kn.onpointerup=()=>y0=null;
+ set();w.append(kn,v,E('div','kl',l));return w;}
+function mod(title,id,fxn){const m=E('div','mod'+(fxn&&!S.on[fxn]?' off':''));const h=E('div','ph',`<span>${title}</span>`);if(fxn){const p=E('button','pw'+(S.on[fxn]?' on':''),'⏻');p.onclick=()=>{S.on[fxn]=!S.on[fxn];render();};h.append(p);}m.append(h);const r=E('div','kr');KN[id].forEach(a=>r.append(knob(...a)));m.append(r);return m;}
+function mods(){const M=$('#mods');M.innerHTML='';const t=E('div','mod tun','<div class="ph"><span>TUNER</span></div><div class="gauge"><div class="needle" id="nd"></div></div><div id="tn" style="font:700 22px Arial;margin-top:6px">A</div><div style="font-size:10px">A4 = 440 Hz</div>');M.append(t,mod('COMPRESSOR','cmp','COMPRESSOR'),mod('EQ','eq','EQ'),mod('REVERB','rev','REVERB'),mod('DELAY','dly','DELAY'));
+ document.querySelectorAll('.kr[data-m]').forEach(r=>{r.innerHTML='';KN[r.dataset.m].forEach(a=>r.append(knob(...a)));});}
+const PEDS=['Laiko Warm','Folk Bright','Lead Sing','Studio Air'];
+function peds(){const P=$('#peds');P.innerHTML='';PEDS.forEach((p,i)=>{const d=E('div','pd'+(p===S.name?' on':''),`<div><b style="color:#fff">${i+1} · ${p}</b><div style="font-size:10px;color:#7a8499">CC ${20+i}</div></div><span class="ft"></span>`);d.onclick=()=>applyPreset(p);P.append(d);});}
+const ST=[['CLEAN','#4c8de8'],['GATE','#cfd6e4'],['WAH','#e0558a'],['OCTAVE','#e8834c'],['DRIVE','#d8b43c'],['PHASE','#e8775c'],['MOD','#34c3b0'],['DELAY','#45c46a'],['REVERB','#8a5ce8'],['BOOST','#e33']];let stOn={0:1,1:1};
+function stomps(){const R=$('#stomps');R.innerHTML='';ST.forEach(([n,c],i)=>{const d=E('div','st'+(stOn[i]?' on':''),`<i></i><span>${i+1}</span><span class="ft"></span><span>${n}</span>`);d.style.color=c;d.onclick=()=>{stOn[i]=!stOn[i];stomps();};R.append(d);});
+ const tp=E('div','st',`<i></i><span id="bpm">${S.bpm||120} BPM</span><span class="ft"></span><span>TAP</span>`);let taps=[];tp.onclick=()=>{const t=performance.now();taps=taps.filter(x=>t-x<3000);taps.push(t);if(taps.length>1){S.bpm=Math.round(60000/((t-taps[0])/(taps.length-1)));S.k['dly.time']=Math.min(1000,60000/S.bpm);mods();$('#bpm').textContent=S.bpm+' BPM';}};R.append(tp);}
+function svg(){const b=S.inst==='bouzouki';
+ const body=b?'<ellipse cx="100" cy="390" rx="70" ry="85" fill="url(#w)" stroke="#d9b45a" stroke-width="3"/><circle cx="100" cy="370" r="16" fill="#111" stroke="#d9b45a" stroke-width="3"/>'
+  :'<path d="M100 300 C40 330 30 420 70 470 Q100 495 130 470 C170 420 160 330 100 300Z" fill="url(#w)" stroke="#d9b45a" stroke-width="3"/><circle cx="100" cy="400" r="10" fill="#111" stroke="#d9b45a" stroke-width="2"/>';
+ const neckH=b?250:270,n=b?4:3,frets=b?14:18;let fr='';for(let i=1;i<frets;i++){const y=40+i*(neckH/frets);fr+=`<line x1="90" x2="110" y1="${y}" y2="${y}" stroke="#aaa" stroke-width="1.2"/>`;}
+ let strs='';for(let i=0;i<n;i++){const x=93+i*14/(n-1);strs+=`<line x1="${x}" x2="${100+(x-100)*1.6}" y1="30" y2="${b?440:450}" stroke="#eee" stroke-width=".8"/>`;}
+ $('#svg').innerHTML=`<svg viewBox="0 0 200 500" width="190" height="${innerWidth<820?280:360}"><defs><linearGradient id="w" x1="0" x2="1"><stop offset="0" stop-color="#3a2516"/><stop offset=".5" stop-color="#7a4a26"/><stop offset="1" stop-color="#3a2516"/></linearGradient></defs>
+ <rect x="88" y="8" width="24" height="28" rx="5" fill="#2a1a10" stroke="#d9b45a"/><rect x="89" y="36" width="22" height="${neckH+(b?25:0)}" fill="#1e140c"/>${fr}${body}${strs}<rect x="85" y="${b?432:442}" width="30" height="5" fill="#d9b45a"/></svg>`;
+ $('#iname').textContent=b?'Bouzouki · 4 courses':'Bağlama · 3 courses';document.querySelectorAll('.sw button').forEach(x=>x.classList.toggle('on',x.dataset.i===S.inst));}
+document.querySelectorAll('.sw button').forEach(x=>x.onclick=()=>{S.inst=x.dataset.i;svg();});
+function render(){tree();chain();mods();peds();stomps();svg();upd();}
+// ---- WebAudio demo: osc -> comp -> EQ -> dry + delay + reverb -> out
+let AC,N={};function audio(){AC=new (window.AudioContext||window.webkitAudioContext)();const c=AC;N.in=c.createGain();N.cmp=c.createDynamicsCompressor();N.lo=c.createBiquadFilter();N.lo.type='lowshelf';N.lo.frequency.value=200;N.mi=c.createBiquadFilter();N.mi.type='peaking';N.hi=c.createBiquadFilter();N.hi.type='highshelf';N.hi.frequency.value=3500;
+ N.out=c.createGain();N.dl=c.createDelay(2);N.fb=c.createGain();N.dw=c.createGain();N.cv=c.createConvolver();N.rw=c.createGain();N.an=c.createAnalyser();
+ N.in.connect(N.cmp).connect(N.lo).connect(N.mi).connect(N.hi);N.hi.connect(N.out);N.hi.connect(N.dl);N.dl.connect(N.fb).connect(N.dl);N.dl.connect(N.dw).connect(N.out);N.hi.connect(N.cv);N.cv.connect(N.rw).connect(N.out);N.out.connect(N.an);N.an.connect(c.destination);ir();upd();}
+function ir(){if(!AC)return;const len=AC.sampleRate*S.k['rev.decay'],b=AC.createBuffer(2,len,AC.sampleRate);for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2+(100-S.k['rev.size'])/25);}N.cv.buffer=b;}
+let lastDecay=0;function upd(){if(!AC)return;const k=S.k,on=S.on;N.cmp.threshold.value=on.COMPRESSOR?k['cmp.thresh']:0;N.lo.gain.value=on.EQ?k['eq.low']:0;N.mi.gain.value=on.EQ?k['eq.mid']:0;N.mi.frequency.value=k['eq.freq'];N.hi.gain.value=on.EQ?k['eq.high']:0;
+ N.dl.delayTime.value=k['dly.time']/1000;N.fb.gain.value=k['dly.fb']/100;N.dw.gain.value=on.DELAY?k['dly.mix']/100:0;N.rw.gain.value=on.REVERB?k['rev.mix']/100*1.5:0;N.out.gain.value=S.mute||!on.OUTPUT?0:Math.pow(10,k['cmp.out']/20)*.8;
+ if(k['rev.decay']+k['rev.size']!==lastDecay){lastDecay=k['rev.decay']+k['rev.size'];ir();}}
+function note(m,t){const c=AC,o=c.createOscillator(),o2=c.createOscillator(),g=c.createGain(),f=440*Math.pow(2,(m-69)/12);o.type=o2.type='sawtooth';o.frequency.value=f;o2.frequency.value=f*(S.inst==='bouzouki'?1.003:2);const dr=1+S.k['amp.gain']/20;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.25*dr/2,t+.005);g.gain.exponentialRampToValueAtTime(.0001,t+.9);o.connect(g);o2.connect(g);g.connect(N.in);o.start(t);o2.start(t);o.stop(t+1);o2.stop(t+1);}
+$('#demo').onclick=()=>{if(!AC)audio();AC.resume();const t=AC.currentTime;[62,66,69,74,69,66,62].forEach((m,i)=>note(m,t+i*.22));};
+$('#save').onclick=()=>{localStorage.setItem('bs_sb_v2_preset',JSON.stringify(S));$('#msg').textContent='נשמר: '+S.name;};
+$('#load').onclick=()=>{const j=localStorage.getItem('bs_sb_v2_preset');if(j){S=JSON.parse(j);render();$('#msg').textContent='נטען: '+S.name;}else $('#msg').textContent='אין פריסט שמור';};
+(function meter(){const a=N.an?(()=>{const d=new Uint8Array(256);N.an.getByteTimeDomainData(d);return Math.max(...d.map(x=>Math.abs(x-128)))/128;})():0;$('#mi').style.width=$('#mo').style.width=Math.min(100,a*160)+'%';const nd=$('#nd');if(nd)nd.style.transform=`rotate(${Math.sin(performance.now()/700)*8}deg)`;requestAnimationFrame(meter);})();
+render();
+</script></body></html>
