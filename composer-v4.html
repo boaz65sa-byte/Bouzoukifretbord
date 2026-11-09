@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>מלחין v4 · Bouzouki Composer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Music&display=swap" rel="stylesheet">
+<style>
+:root{--cy:#2fd3f2;--or:#ff7a00;--bg:#000;--pn:#111116;--ln:#24242b;--tx:#e8e8ee;--mu:#9a9aa6}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,"SF Pro Text",Inter,"Segoe UI",Roboto,Arial,sans-serif;font-size:17px;-webkit-user-select:none;user-select:none}
+body{padding:calc(env(safe-area-inset-top) + 8px) 12px calc(env(safe-area-inset-bottom) + 8px)}
+.hd{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.hd h1{margin:0;font-size:26px;color:var(--cy);font-weight:800}
+.hd .badge{font-size:15px;background:#2a1a00;color:#ffb35c;border:1px solid #6b3d00;border-radius:999px;padding:4px 12px}
+.hd a{margin-inline-start:auto;color:var(--cy);font-size:17px;text-decoration:none;border:1px solid #1a5b6a;border-radius:16px;padding:6px 14px}
+.pn{background:var(--pn);border:1px solid var(--ln);border-radius:14px;padding:12px;margin-bottom:10px}
+.ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button{font-family:inherit;cursor:pointer;border:0;border-radius:12px;font-size:19px;font-weight:700;padding:0 16px;height:52px;background:#1d1d22;color:#e2e2ea;box-shadow:inset 0 0 0 1px #2e2e36}
+button:disabled{opacity:.4}
+#rec{background:#c21d32;color:#fff;font-size:22px;padding:0 26px;height:60px;box-shadow:none}
+#rec.on{animation:pulse 1s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(255,60,80,.35)}}
+#demo{background:#0e2e37;color:var(--cy);box-shadow:inset 0 0 0 1px #1a5b6a}
+#save{background:var(--cy);color:#00222b}
+.fld{display:flex;align-items:center;gap:8px;font-size:18px;color:var(--mu)}
+input[type=number],input[type=text]{font:inherit;font-size:19px;background:#0b0b0e;color:#fff;border:1px solid #33333c;border-radius:10px;height:48px;padding:0 10px}
+input[type=number]{width:84px;text-align:center}
+#sname{width:220px}
+.tog{display:flex;align-items:center;gap:8px;font-size:18px;color:var(--tx)}
+.tog input{width:24px;height:24px;accent-color:var(--cy)}
+.sp{flex:1}
+.live{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center}
+#bigNote{font-size:54px;font-weight:800;color:#fff;min-width:250px;text-align:center;line-height:1.05;direction:rtl}
+#bigNote small{display:block;font-size:20px;color:var(--mu);font-weight:600;margin-top:4px}
+.tuner{position:relative;height:64px}
+.tuner .scale{position:absolute;inset:24px 0 auto 0;height:16px;border-radius:8px;background:linear-gradient(90deg,#5a1d1d,#3a3a14 35%,#14402a 46%,#14402a 54%,#3a3a14 65%,#5a1d1d)}
+.tuner .mid{position:absolute;left:50%;top:14px;width:2px;height:36px;background:#fff;opacity:.6}
+.tuner #needle{position:absolute;left:50%;top:8px;width:6px;margin-left:-3px;height:48px;border-radius:3px;background:var(--or);transition:left .08s}
+.tuner .lbl{position:absolute;bottom:-4px;font-size:16px;color:var(--mu)}
+#cents{font-size:24px;font-weight:700;min-width:90px;text-align:center;direction:ltr}
+#status{font-size:18px;color:var(--mu);text-align:center;margin-top:6px}
+#status b{color:var(--cy)}
+.ttl{font-size:21px;font-weight:700;color:var(--cy);margin:0 0 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ttl i{width:8px;height:8px;border-radius:50%;background:var(--cy)}
+.ttl span{font-size:16px;color:var(--mu);font-weight:500}
+.scr{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;direction:ltr;border-radius:10px}
+canvas{display:block}
+#neckWrap{background:#000}
+.score{background:#f4f1e8;border-radius:10px}
+.hint{font-size:16px;color:var(--mu);margin-top:6px}
+.ft{text-align:center;font-size:16px;color:var(--mu);margin:14px 0 6px}
+.ft a{color:var(--cy);text-decoration:none}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%);background:#0e2e37;color:#fff;border:1px solid var(--cy);border-radius:14px;padding:12px 20px;font-size:18px;display:none;z-index:50;max-width:92vw;text-align:center}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:60}
+#modal .box{background:#111116;border:1px solid var(--cy);border-radius:18px;padding:24px;max-width:460px;width:90vw;text-align:center}
+#modal h2{margin:0 0 10px;color:var(--cy);font-size:26px}
+#modal p{font-size:18px;line-height:1.5;margin:8px 0}
+#modal .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+#modal a{display:inline-flex;align-items:center;height:50px;padding:0 16px;border-radius:12px;background:var(--cy);color:#00222b;font-weight:700;text-decoration:none;font-size:18px}
+@media (max-width:700px){
+ body{font-size:16px;padding-left:8px;padding-right:8px}
+ .hd h1{font-size:23px}
+ .live{grid-template-columns:1fr;gap:6px}
+ #bigNote{font-size:46px;min-width:0}
+ #cents{min-width:0}
+ #sname{width:100%;flex:1}
+ .ctl button{flex:1 1 auto}
+ #rec{flex:1 1 100%}
+ .fld.name{flex:1 1 100%}
+}
+.opts{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--ln)}
+.opts select{font:inherit;font-size:18px;background:#0b0b0e;color:#fff;border:1px solid #33333c;border-radius:10px;height:44px;padding:0 6px}
+.opts input[type=range]{width:160px;accent-color:var(--cy)}
+button.tg{height:46px;font-size:18px}
+button.tg.on{background:#0e2e37;color:var(--cy);box-shadow:inset 0 0 0 2px var(--cy)}
+#newp{background:#2a1a00;color:#ffb35c;box-shadow:inset 0 0 0 1px #6b3d00}
+#posLbl{color:#ffb35c;font-weight:800;font-size:20px}
+#ask{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:70}
+#ask .box{background:#111116;border:1px solid #ffb35c;border-radius:18px;padding:24px;max-width:460px;width:90vw;text-align:center}
+#ask h2{margin:0 0 8px;color:#ffb35c;font-size:25px}#ask p{font-size:18px;color:var(--mu);margin:6px 0 16px}
+#ask .row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+body.embed .hd{display:none}
+@media (max-width:700px){.opts input[type=range]{width:120px}}
+</style>
+</head>
+<body>
+<div class="hd"><h1>🎼 מלחין</h1><span class="badge">v4 · גרסת בדיקה</span><a class="back" href="visualizer-v14.html">‹ חזרה לוויזואלייזר</a></div>
+
+<div class="pn">
+ <div class="ctl">
+  <button id="rec">● הקלט</button>
+  <button id="stop" disabled>■ עצור</button>
+  <button id="play">▶ נגן מההתחלה</button>
+  <button id="undo">↶ מחק תו אחרון</button>
+  <button id="newp">📄 דף חדש</button>
+  <button id="demo">דמו</button>
+  <span class="sp"></span>
+  <label class="fld">BPM <input id="bpm" type="number" min="40" max="220" value="100"></label>
+  <label class="tog"><input id="met" type="checkbox"> מטרונום</label>
+ </div>
+ <div class="ctl" style="margin-top:10px">
+  <label class="fld name">שם השיר <input id="sname" type="text" placeholder="השיר החדש שלי" value=""></label>
+  <button id="save">💾 שמור כשיר</button>
+ </div>
+ <div class="opts">
+  <button class="tg" id="lockD">🔒 נעל מיתר D</button>
+  <button class="tg" id="lockP">🔒 נעל פוזיציה</button>
+  <label class="fld">מסריג <select id="pFrom"></select></label>
+  <label class="fld">עד <select id="pTo"></select></label>
+  <label class="fld">רגישות <input id="sens" type="range" min="0" max="100" value="68"></label>
+  <label class="tog"><input id="keepTrem" type="checkbox"> שמור טרמולו כתווים נפרדים</label>
+  <button class="tg" id="sample">🎙 הקלט קטע לבדיקה (10 שנ׳)</button>
+  <button class="tg" id="cal" title="2 שניות שקט: מודד את רעש החדר וקובע את הסף">🎚 כיול רעש</button>
+  <button class="tg" id="dbgBtn">🐞 דיבאג</button>
+ </div>
+</div>
+
+<div class="pn live">
+ <div id="bigNote">—<small>נגן תו בבוזוקי</small></div>
+ <div>
+  <div class="tuner"><div class="scale"></div><div class="mid"></div><div id="needle"></div>
+   <span class="lbl" style="left:0">−50¢</span><span class="lbl" style="left:50%;transform:translateX(-50%)">0</span><span class="lbl" style="right:0">+50¢</span></div>
+  <div id="status">מוכן · לחץ <b>● הקלט</b> ונגן, או <b>דמו</b> לשמיעת דוגמה</div>
+ </div>
+ <div id="cents">0¢</div>
+</div>
+
+<div class="pn">
+ <div class="ttl"><i></i>צוואר <span id="posLbl">פוזיציה —</span><span>· C F A D · 22 סריגים · המספר בכדור = אצבע · הקש על הצוואר כדי לתקן</span></div>
+ <div class="scr" id="neckWrap"><canvas id="neck"></canvas></div>
+</div>
+
+<div class="pn">
+ <div class="ttl"><i></i>תווים וטאב <span id="scoreInfo">· 0 תווים</span></div>
+ <div class="scr score" id="scoreWrap"><canvas id="score"></canvas></div>
+ <div class="hint">משכי התווים מעוגלים לפי ה-BPM: שמינית, רבע או חצי. הקש על תו בטאב או בחמשה כדי לסמן אותו. טרמולו מסומן בפסים על הגבעול.</div>
+</div>
+
+<div class="ft"><a href="https://bs-simple.com" target="_blank" rel="noopener">bs-simple.com · פתרונות יצירתיים · בועז סעדה</a></div>
+<div id="toast"></div>
+<pre id="dbg" style="display:none;position:fixed;left:8px;bottom:8px;z-index:80;max-width:min(560px,94vw);margin:0;padding:10px 12px;background:rgba(0,0,0,.86);color:#9ef;border:1px solid #2fd3f2;border-radius:10px;font:600 15px/1.35 ui-monospace,Menlo,monospace;direction:ltr;text-align:left;white-space:pre-wrap;pointer-events:none"></pre>
+<div id="modal"><div class="box"><h2>✓ נשמר!</h2><p id="mtext"></p><div class="row"><a id="openSongs" href="visualizer-v14.html?mode=songs">פתח את «שירים»</a><button id="mclose">סגור</button></div></div></div>
+<div id="ask"><div class="box"><h2>להתחיל דף חדש או להמשיך?</h2><p>יש בדף תווים שעוד לא נשמרו.</p><div class="row"><button id="askNew" style="background:#ffb35c;color:#2a1a00">📄 דף חדש</button><button id="askCont" style="background:var(--cy);color:#00222b">➜ המשך</button><button id="askCancel">ביטול</button></div></div></div>
+<script>
+/*ENGINE-START*/
+// ===== composer-v4 engine (v2/v3 base + front end: high-pass, gap-free hop scheduler, auto gate, octave-flip guard): pure JS (no DOM). Shared by the page and the offline node tests. =====
+// ---- YIN pitch detector; also reports CMND at tau/2 and 2*tau for octave-ambiguity checks ----
+function yin(buf,sr,opt){opt=opt||{};const thr=opt.thr||0.15,fmin=opt.fmin||115,fmax=opt.fmax||1300;
+ const N=buf.length,W=N>>1,tMin=Math.max(2,Math.floor(sr/fmax)),tMax=Math.min(W-1,Math.ceil(sr/fmin*2.1));
+ const tSearch=Math.min(tMax,Math.ceil(sr/fmin));
+ const d=new Float32Array(tMax+2);
+ for(let tau=1;tau<=tMax+1;tau++){let s=0;for(let i=0;i<W;i++){const x=buf[i]-buf[i+tau];s+=x*x;}d[tau]=s;}
+ const c=new Float32Array(tMax+2);c[0]=1;let run=0;for(let tau=1;tau<=tMax+1;tau++){run+=d[tau];c[tau]=run>0?d[tau]*tau/run:1;}
+ let tau=-1;for(let t=tMin;t<=tSearch;t++){if(c[t]<thr){while(t+1<=tSearch&&c[t+1]<c[t])t++;tau=t;break;}}
+ if(tau<0){let bm=1e9,bt=-1;for(let t=tMin;t<=tSearch;t++)if(c[t]<bm){bm=c[t];bt=t;}if(bm>0.35)return null;tau=bt;}
+ // v4: sub-harmonic guard - during the pick attack YIN can lock onto 3*period (e.g. G4 read as C3 = G4/3; seen in sample2 @6.42 s).
+ // if the CMND at tau/3 is itself a clear dip the true period is the shorter one (tau/2 stays with chooseOctave: octave strings make it ambiguous).
+ if(opt.subGuard!==false){for(const k of (opt.subK||[3])){const T=Math.round(tau/k);if(T<tMin)continue;let bk=T,bv=c[T];for(let j=T-2;j<=T+2;j++)if(j>=tMin&&c[j]<bv){bv=c[j];bk=j;}
+  if(bv<(opt.subThr||0.25)){while(bk+1<=tMax&&c[bk+1]<c[bk])bk++;while(bk-1>=tMin&&c[bk-1]<c[bk])bk--;tau=bk;break;}}}
+ let bt=tau;if(tau>1&&tau<tMax+1){const a=c[tau-1],b=c[tau],e=c[tau+1],den=a-2*b+e;if(Math.abs(den)>1e-9)bt=tau+0.5*(a-e)/den;}
+ const near=(T)=>{T=Math.round(T);let m=1;for(let k=T-2;k<=T+2;k++)if(k>=1&&k<=tMax)m=Math.min(m,c[k]);return m;};
+ return {f:sr/bt,conf:1-c[tau],cTau:c[tau],cDown:2*tau<=tMax?near(2*tau):1,cUp:tau/2>=2?near(tau/2):1};}
+function rmsOf(buf){let s=0;for(let i=0;i<buf.length;i++)s+=buf[i]*buf[i];return Math.sqrt(s/buf.length);}
+const f2m=f=>69+12*Math.log2(f/440), m2f=m=>440*Math.pow(2,(m-69)/12);
+const median=a=>{const b=a.slice().sort((x,y)=>x-y);return b[b.length>>1];};
+// ---- note tracker: noise gate, onset on a jump of the NEWEST ~20 ms energy, pitch read only from samples AFTER the pick attack,
+//      median-smoothed pitch. feed(frame, tEnd): tEnd = time of the LAST sample in frame (mic: AudioContext.currentTime).
+// cb.onStart({midi,t,cents,altDown,altUp}), cb.onEnd(t), cb.onPitch(midiFloat|null, rms)
+function makeTracker(sr,cb,opt){opt=opt||{};const MIN=opt.minMidi||47,MAX=opt.maxMidi||86,ATT=opt.attack!=null?opt.attack:0.035,MED=opt.med||5,MINLEN=1024;
+ const gate=()=>opt.getGate?opt.getGate():(opt.gate||0.006);
+ const S={cur:null,pend:null,diff:0,quiet:0,envS:0,envD:0,onsetT:-1,hist:[]};
+ function feed(frame,t){const g=gate(),N=frame.length,r=rmsOf(frame),rs=rmsOf(frame.subarray(N-1024));
+  let dsum=0;for(let i=N-1023;i<N;i++){const dd=frame[i]-frame[i-1];dsum+=dd*dd;}const rd=Math.sqrt(dsum/1023);  // high-frequency (pick transient) energy
+  // v4: compare with the MINIMUM of the last ~3 frames (~65 ms), so a pluck whose energy rises over 2-3 frames still counts
+  const hS=S.hS||(S.hS=[]),hD=S.hD||(S.hD=[]);const mS=hS.length?Math.min(...hS):0,mD=hD.length?Math.min(...hD):0;
+  const KS=opt.kS||1.35,KD=opt.kD||1.6;
+  const rising=(rs>Math.max(g,mS*KS)&&rs-mS>g*0.5)||(rs>g&&mD>0&&rd>mD*KD&&rd>g*0.25);
+  hS.push(rs);hD.push(rd);if(hS.length>(opt.look||3)){hS.shift();hD.shift();}S.envS=rs;S.envD=rd;
+  if(r<g&&rs<g){cb.onPitch&&cb.onPitch(null,r);if(S.cur&&++S.quiet>=3){cb.onEnd&&cb.onEnd(t);S.cur=null;}S.pend=null;S.hist=[];return;}
+  S.quiet=0;
+  if(rising&&t-S.onsetT>(opt.refr||0.08)){const ot=t-1024/sr/2;S.onsetT=ot;S.hist=[];if(S.cur){cb.onEnd&&cb.onEnd(ot);S.cur=null;}S.pend={t:ot,c:0,m:null,fresh:true};}
+  let fr=frame;
+  if(S.onsetT>=0){const avail=Math.floor((t-(S.onsetT+ATT))*sr);if(avail<MINLEN&&t-S.onsetT<0.2)return;   // still inside the pluck attack
+   if(avail<N)fr=frame.subarray(N-Math.max(MINLEN,avail));}
+  const p=yin(fr,sr,opt);cb.onFrame&&cb.onFrame({t,r,rs,rd,g,onset:rising,f:p?p.f:null,conf:p?p.conf:0,cTau:p?p.cTau:1,cUp:p?p.cUp:1,cDown:p?p.cDown:1});
+  if(!p||p.conf<0.6){cb.onPitch&&cb.onPitch(null,r);return;}
+  S.hist.push(f2m(p.f));if(S.hist.length>MED)S.hist.shift();const mf=median(S.hist),mi=Math.round(mf);cb.onPitch&&cb.onPitch(mf,r);
+  if(mi<MIN||mi>MAX)return;
+  if(S.cur){if(mi!==S.cur.m){if(++S.diff>=2){cb.onEnd&&cb.onEnd(t);S.cur=null;S.diff=0;S.hist=S.hist.slice(-1);S.pend={t:t-0.05,c:1,m:mi,alt:p};}else return;}else{S.diff=0;return;}}
+  if(!S.pend)S.pend={t,c:0,m:mi,fresh:false};
+  if(S.pend.m!==mi){S.pend.m=mi;S.pend.c=0;}
+  S.pend.alt=p;
+  if(++S.pend.c>=(S.pend.fresh?1:2)){S.cur={m:mi};const a=S.pend.alt;
+   cb.onStart&&cb.onStart({midi:mi,t:S.pend.t,cents:Math.round((mf-mi)*100),altDown:a.cTau>0.04&&a.cDown<a.cTau*0.5&&mi-12>=MIN,altUp:a.cUp<Math.max(0.1,a.cTau*1.5)&&mi+12<=MAX});S.pend=null;}}
+ function flush(t){if(S.cur){cb.onEnd&&cb.onEnd(t);S.cur=null;}}
+ return {feed,flush,S};}
+// ---- v4 front end: every captured sample is analysed exactly once, independent of timers / main-thread stalls.
+// push(block,tEnd): raw mic block (AudioWorklet / ScriptProcessor), tEnd = time of its last sample.
+// 1) 4th-order high-pass @ HP Hz removes the ~88 Hz body/handling thump and 50 Hz hum found in the real samples
+// 2) 2048-sample window advanced by a fixed ~21 ms hop -> makeTracker.feed (same as the offline tests)
+// 3) auto gate: max(manual/calibrated gate, noise floor*NF_K); noise floor = slow minimum of the short-term level
+function biquadHP(sr,fc,q){const w=2*Math.PI*fc/sr,al=Math.sin(w)/(2*q),c=Math.cos(w),a0=1+al;
+ const b0=(1+c)/2/a0,b1=-(1+c)/a0,b2=b0,a1=-2*c/a0,a2=(1-al)/a0;let x1=0,x2=0,y1=0,y2=0;
+ return x=>{const y=b0*x+b1*x1+b2*x2-a1*y1-a2*y2;x2=x1;x1=x;y2=y1;y1=y;return y;};}
+function makeFrontEnd(sr,cb,opt){opt=opt||{};const W=2048,HOP=opt.hop||Math.round(sr*0.0213),HP=opt.hp!=null?opt.hp:105;
+ const f1=biquadHP(sr,HP,0.5412),f2=biquadHP(sr,HP,1.3066);               // Butterworth 4th order = two biquads
+ const ring=new Float32Array(W);let wp=0,filled=0,sinceHop=0;const frame=new Float32Array(W);
+ const st={noise:null,level:0,gate:0,frames:0,lastT:0,maxGap:0};
+ const autoGate=()=>{const base=opt.getGate?opt.getGate():(opt.gate||0.003);const nf=st.noise!=null?st.noise*(opt.nfk||3):0;return Math.max(base,nf);};
+ const tr=makeTracker(sr,cb,Object.assign({},opt,{getGate:()=>st.gate}));
+ let blockRms=0,blockN=0;
+ function push(block,tEnd){const n=block.length,t0=tEnd-n/sr;
+  if(st.lastT&&t0-st.lastT>st.maxGap)st.maxGap=t0-st.lastT;st.lastT=tEnd;
+  for(let i=0;i<n;i++){let v=block[i];if(HP>0)v=f2(f1(v));ring[wp]=v;wp=(wp+1)%W;if(filled<W)filled++;blockRms+=v*v;blockN++;
+   if(++sinceHop>=HOP){sinceHop=0;
+    const lv=Math.sqrt(blockRms/blockN);blockRms=0;blockN=0;st.level=lv;
+    // noise floor: follows quiet levels quickly, rises only very slowly (so sustained playing is not mistaken for noise)
+    if(st.noise==null)st.noise=lv;else st.noise=lv<st.noise?st.noise*0.7+lv*0.3:st.noise*1.002;
+    st.gate=autoGate();
+    if(filled<W)continue;for(let k=0;k<W;k++)frame[k]=ring[(wp+k)%W];st.frames++;
+    tr.feed(frame,t0+(i+1)/sr);}}}
+ function calibrate(samples){/* samples: raw room noise (~2 s). returns suggested gate */const ff1=biquadHP(sr,HP,0.5412),ff2=biquadHP(sr,HP,1.3066);
+  let s=0,peak=0;const blk=Math.round(sr*0.05),lv=[];let acc=0,c=0;
+  for(let i=0;i<samples.length;i++){const v=ff2(ff1(samples[i]));if(i<sr*0.1)continue;acc+=v*v;c++;if(c>=blk){lv.push(Math.sqrt(acc/c));acc=0;c=0;}}
+  lv.sort((a,b)=>a-b);const p90=lv.length?lv[Math.floor(lv.length*0.9)]:0.002;return Math.max(0.0015,Math.min(0.05,p90*2.2));}
+ return {push,calibrate,tr,st,flush:t=>tr.flush(t)};}
+// a note that lands exactly 12 semitones from the previous one within 120 ms is the same pluck re-read at the wrong octave
+// glide: a different pitch starting < 90 ms after the previous note is the settled pitch of the same pluck/slide -> replace
+function isGlide(prev,m,t){return !!(prev&&prev.midi!==m&&(prev.trem||1)===1&&t-prev.t<(isGlide.win||0.09));}
+function isOctaveFlip(prev,m,t){return !!(prev&&Math.abs(m-prev.midi)===12&&t-(prev.lastHit!=null?prev.lastHit:prev.t)<0.12);}
+// ---- fingering: hand-position (פוזיציה) tracking ----
+const CO=['C','F','A','D'],OPEN={C:48,F:53,A:57,D:62},NF=22,CI={C:0,F:1,A:2,D:3};
+const PREF={D:0,A:0.25,F:0.9,C:1.6};
+function makeHand(){return {p:null,lockD:false,range:null};}   // p = fret under the index finger; window p..p+3 (+p+4 stretch)
+function noteCost(m,c,f,h,prev){let cost=PREF[c];
+ if(c==='C'&&m>=57)cost+=2.5;                       // avoid the C course unless the pitch is below ~A3
+ if(c==='A'&&f>12)cost+=1.5;if(c==='F'&&f>9)cost+=1.2;if(c==='C'&&f>7)cost+=1.5;
+ const p=h.p;
+ if(p!=null){if(f===0)cost+=p<=3?0.15:1.2;
+  else if(f>=p&&f<=p+3){}else if(f===p+4)cost+=0.3;else if(f===p-1)cost+=0.7;
+  else{const sh=f<p?p-f:f-(p+3);cost+=1.4+0.6*sh;}}
+ else cost+=f===0?0.1:f*0.04;
+ if(prev){if(c!==prev.course)cost+=0.5+0.15*Math.abs(CI[c]-CI[prev.course]);if(f&&prev.fret)cost+=0.06*Math.abs(f-prev.fret);}
+ return cost;}
+function candidates(m,h){let out=[];for(const c of CO){const f=m-OPEN[c];if(f>=0&&f<=NF)out.push({course:c,fret:f});}
+ // C course only when the pitch can't be played anywhere else (below F3); F course only if D/A can't play it
+ if(out.some(x=>x.course!=='C'))out=out.filter(x=>x.course!=='C');
+ if(out.some(x=>x.course==='D'||x.course==='A'))out=out.filter(x=>x.course!=='F'||m<57);
+ // high frets belong to the higher courses: drop C/F/A above fret 12 when a higher course can play the same pitch (never A17 for D5)
+ out=out.filter(x=>!(x.fret>12&&x.course!=='D'&&out.some(y=>CI[y.course]>CI[x.course])));
+ let o2=out;if(h.lockD){const d=out.filter(x=>x.course==='D');if(d.length)o2=d;}
+ if(h.range){const r=o2.filter(x=>x.fret===0||(x.fret>=h.range[0]&&x.fret<=h.range[1]));if(r.length)o2=r;}
+ return o2;}
+function placeNote(m,h,prev){let best=null;for(const x of candidates(m,h)){const cost=noteCost(m,x.course,x.fret,h,prev);if(!best||cost<best.cost)best={course:x.course,fret:x.fret,cost};}return best;}
+function updateHand(h,f){if(h.range){h.p=h.range[0];return;}if(f===0){if(h.p==null)h.p=1;return;}
+ if(h.p==null)h.p=f<=4?1:Math.max(1,f-1);else if(f<h.p)h.p=f;else if(f>h.p+4)h.p=f-3;h.p=Math.max(1,Math.min(19,h.p));}
+function anchorTo(h,f){h.p=f===0?1:Math.max(1,Math.min(19,f-1));}
+const fingerOf=(f,p)=>f===0?0:Math.max(1,Math.min(4,f-(p||1)+1));
+// octave-error guard: YIN flagged a possible octave ambiguity -> pick the candidate that fits the previous note and the hand window
+function onDA(m,h){const r=[];for(const c of ['D','A']){const f=m-OPEN[c];if(f>=0&&f<=NF&&(h.p==null||f===0||(f>=h.p-1&&f<=h.p+4)))r.push(c+f);}return r;}
+function chooseOctave(e,h,prev){const opts=[{m:e.midi,pen:0}];
+ if(e.altDown)opts.push({m:e.midi-12,pen:0.6});
+ // detected pitch only playable on C/F while we are playing on D/A -> also try one octave up (YIN sub-octave error)
+ if(e.midi+12<=84&&(e.altUp||(e.midi<62&&prev&&prev.midi>=66)))opts.push({m:e.midi+12,pen:e.altUp?0.5:1.4});
+ if(opts.length===1)return e.midi;let best=null;
+ for(const o of opts){const pl=placeNote(o.m,h,prev);if(!pl)continue;
+  const da=onDA(o.m,h).length?0:1.2;                       // landing on D/A inside the hand window is preferred
+  const cost=pl.cost+o.pen+da+(prev?0.2*Math.abs(o.m-prev.midi):0);if(!best||cost<best.cost)best={m:o.m,cost};}
+ return best?best.m:e.midi;}
+function scoreAll(m,h,prev){return candidates(m,h).map(x=>({c:x.course,f:x.fret,cost:+noteCost(m,x.course,x.fret,h,prev).toFixed(2)})).sort((a,b)=>a.cost-b.cost);}
+// tremolo: a repeat of the same pitch within 110 ms (v4; v3 used 160 ms, which swallowed Boaz's repeated eighth notes) of the last hit is merged into the previous note (unless keep=true)
+function mergeTrem(prev,midi,t,keep){if(keep||!prev||prev.midi!==midi)return false;const last=prev.lastHit!=null?prev.lastHit:prev.t;if(t-last>(mergeTrem.win||0.11))return false;prev.lastHit=t;prev.trem=(prev.trem||1)+1;prev.end=null;return true;}
+const ROMAN=['0','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX'];
+/*ENGINE-END*/
+
+// ===== composer-v2 app (DOM) =====
+const $=id=>document.getElementById(id);
+const ORG='#ff7a00',TQ='#2fd3f2',AMB='#ffb35c';
+const LAT=['C','C#','D','Eb','E','F','F#','G','G#','A','Bb','B'];
+const HEB=['דו','דו♯','רה','מי♭','מי','פה','פה♯','סול','סול♯','לה','סי♭','סי'];
+const SPELL=[[0,0],[0,1],[1,0],[2,-1],[2,0],[3,0],[3,1],[4,0],[4,1],[5,0],[6,-1],[6,0]];
+const nname=m=>{const pc=((m%12)+12)%12,o=Math.floor(m/12)-1;return {he:HEB[pc],la:LAT[pc]+o};};
+const QS=new URLSearchParams(location.search),EMBED=QS.get('embed')==='1';if(EMBED)document.body.classList.add('embed');
+
+let NOTES=[],SEL=-1,REC=null,PLAY=null,DEMO=null,AC=null,DIRTY=false,TOFF=0;
+let HAND=makeHand();
+const ball={x:null,y:null,fx:null,fy:null,tx:null,ty:null,t0:0,hit:0,c:null,f:0,fg:0};
+const bpm=()=>Math.min(220,Math.max(40,+$('bpm').value||100));
+const gateVal=()=>0.03*Math.pow(0.03,(+$('sens').value)/100);
+const sensFor=g=>Math.max(0,Math.min(100,Math.round(100*Math.log(g/0.03)/Math.log(0.03))));
+// ---------- v4 capture: every mic sample reaches the detector (AudioWorklet, fallback ScriptProcessor) ----------
+const MIC_C={audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1}};
+const WORKLET_SRC="class P extends AudioWorkletProcessor{constructor(){super();this.b=new Float32Array(1024);this.n=0;}process(i){const c=i[0]&&i[0][0];if(c){for(let k=0;k<c.length;k++){this.b[this.n++]=c[k];if(this.n===1024){this.port.postMessage(this.b,[this.b.buffer]);this.b=new Float32Array(1024);this.n=0;}}}return true;}}registerProcessor('bzk-cap',P);";
+let WORKLET_OK=null;
+async function micNode(A,src,onBlock){const sr=A.sampleRate;let count=0,t0=A.currentTime;const sink=A.createGain();sink.gain.value=0;sink.connect(A.destination);
+ const deliver=d=>{count+=d.length;onBlock(d,t0+count/sr);};
+ if(A.audioWorklet&&WORKLET_OK!==false){try{if(!WORKLET_OK){const u=URL.createObjectURL(new Blob([WORKLET_SRC],{type:'application/javascript'}));await A.audioWorklet.addModule(u);WORKLET_OK=true;}
+   const n=new AudioWorkletNode(A,'bzk-cap',{numberOfInputs:1,numberOfOutputs:1,channelCount:1});n.port.onmessage=ev=>deliver(ev.data);src.connect(n);n.connect(sink);t0=A.currentTime;
+   return {kind:'AudioWorklet',stop:()=>{try{src.disconnect();n.disconnect();sink.disconnect();n.port.onmessage=null;}catch(e){}}};}catch(e){WORKLET_OK=false;}}
+ const sp=A.createScriptProcessor(1024,1,1);sp.onaudioprocess=ev=>deliver(new Float32Array(ev.inputBuffer.getChannelData(0)));src.connect(sp);sp.connect(sink);t0=A.currentTime;
+ return {kind:'ScriptProcessor',stop:()=>{try{src.disconnect();sp.disconnect();sink.disconnect();sp.onaudioprocess=null;}catch(e){}}};}
+function trackInfo(st){try{const tk=st.getAudioTracks()[0],s=tk.getSettings();return {label:tk.label,ec:s.echoCancellation,ns:s.noiseSuppression,agc:s.autoGainControl,sr:s.sampleRate,ch:s.channelCount,lat:s.latency};}catch(e){return null;}}
+// ---------- «כיול רעש»: 2 s of room noise -> gate (sets the sensitivity slider) ----------
+async function calibrateNoise(){if(REC||DEMO||SAMPLE||CAL)return;let st;try{st=await navigator.mediaDevices.getUserMedia(MIC_C);}catch(e){toast('המיקרופון לא זמין');return;}
+ const A=ac();if(A.state==='suspended')await A.resume();const src=A.createMediaStreamSource(st),sr=A.sampleRate,need=Math.round(sr*2.1),buf=new Float32Array(need);let got=0;
+ CAL={st};$('cal').classList.add('on');$('cal').textContent='🤫 שקט… מודד רעש';
+ const nd=await micNode(A,src,d=>{if(got>=need)return;const k=Math.min(d.length,need-got);buf.set(d.subarray(0,k),got);got+=k;
+  if(got>=need){nd.stop();st.getTracks().forEach(t=>t.stop());CAL=null;$('cal').classList.remove('on');$('cal').textContent='🎚 כיול רעש';
+   const fe=makeFrontEnd(sr,{},{}),g=fe.calibrate(buf),sv=sensFor(g);$('sens').value=sv;try{localStorage.setItem('bzk_comp_sens',String(sv));}catch(e){}
+   DBG.cal={g,sv,info:nd.kind};toast('כיול רעש: סף '+g.toFixed(4)+' · רגישות '+sv);if(DBG.on)dbgDraw();}});}
+let CAL=null;
+function q(beats){const opts=[0.5,1,2];let b=opts[0],bd=1e9;for(const o of opts){const d=Math.abs(Math.log2(Math.max(.05,beats)/o));if(d<bd){bd=d;b=o;}}return b;}
+function requantize(){const k=bpm()/60;NOTES.forEach((n,i)=>{const nx=NOTES[i+1];const sec=nx?nx.t-n.t:(n.end!=null?n.end-n.t:60/bpm());n.beats=q(sec*k);});}
+
+// ---------- audio ----------
+function ac(){if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();return AC;}
+const KS={};
+function pluckBuf(m,sr,secs){secs=secs||1.6;const key=m+'_'+sr;if(KS[key])return KS[key];const f=m2f(m),N=Math.floor(sr*secs),out=new Float32Array(N);
+ for(const det of [-0.0015,0.0015]){const P=Math.max(2,Math.round(sr/(f*(1+det))));const line=new Float32Array(P);let seed=m*977+(det>0?13:7);
+  for(let i=0;i<P;i++){seed=(seed*16807)%2147483647;line[i]=(seed/2147483647)*2-1;}let idx=0;
+  for(let i=0;i<N;i++){const v=line[idx];line[idx]=0.996*0.5*(v+line[(idx+1)%P]);idx=(idx+1)%P;out[i]+=v*0.35;}}
+ return KS[key]=out;}
+function pluckAt(m,when,vol){const A=ac(),data=pluckBuf(m,A.sampleRate),b=A.createBuffer(1,data.length,A.sampleRate);b.copyToChannel(data,0);
+ const s=A.createBufferSource(),gn=A.createGain();s.buffer=b;gn.gain.value=vol||0.7;s.connect(gn).connect(A.destination);s.start(when||A.currentTime);}
+function click(when,acc){const A=ac(),o=A.createOscillator(),gn=A.createGain();o.frequency.value=acc?1600:1100;gn.gain.setValueAtTime(0.0001,when);gn.gain.exponentialRampToValueAtTime(0.4,when+0.002);gn.gain.exponentialRampToValueAtTime(0.0001,when+0.05);o.connect(gn).connect(A.destination);o.start(when);o.stop(when+0.06);}
+let MET=null;
+function metStart(){metStop();if(!$('met').checked)return;const A=ac(),iv=60/bpm();let next=A.currentTime+0.05,beat=0;
+ MET=setInterval(()=>{while(next<A.currentTime+0.12){click(next,beat%4===0);next+=iv;beat++;}},25);}
+function metStop(){if(MET){clearInterval(MET);MET=null;}}
+
+// ---------- live display ----------
+function showPitch(mf){const el=$('bigNote');if(mf==null){$('needle').style.left='50%';$('needle').style.background='#555';return;}
+ const m=Math.round(mf),c=Math.round((mf-m)*100),n=nname(m);el.innerHTML=n.he+' · <span dir="ltr">'+n.la+'</span><small>'+Math.round(m2f(mf))+' Hz</small>';
+ $('cents').textContent=(c>0?'+':'')+c+'¢';$('needle').style.left=(50+Math.max(-50,Math.min(50,c)))+'%';$('needle').style.background=Math.abs(c)<10?'#4ade80':ORG;}
+function status(h){$('status').innerHTML=h;}
+let toastT;function toast(s){const t=$('toast');t.textContent=s;t.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',2600);}
+function posText(){return HAND.p==null?'פוזיציה —':'פוזיציה '+ROMAN[HAND.p]+(HAND.range?' 🔒':'');}
+
+// ---------- debug overlay («דיבאג») ----------
+const DBG={on:false,fr:null,last:null,ts:0};
+function dbgFrame(fr){DBG.fr=fr;if(!DBG.on)return;const now=performance.now();if(now-DBG.ts<100)return;DBG.ts=now;dbgDraw();}
+function dbgDraw(){const fr=DBG.fr,L=DBG.last,nm=m=>{const n=nname(m);return n.la;};let t='';
+ if(fr)t+='Hz   '+(fr.f?fr.f.toFixed(1):'—')+(fr.f?'  ('+nm(Math.round(f2m(fr.f)))+' '+((f2m(fr.f)-Math.round(f2m(fr.f)))*100).toFixed(0)+'c)':'')+'\nconf '+fr.conf.toFixed(2)+'  cmnd '+fr.cTau.toFixed(2)+'  up '+fr.cUp.toFixed(2)+'  down '+fr.cDown.toFixed(2)+
+  '\nrms  '+fr.r.toFixed(4)+'  new '+fr.rs.toFixed(4)+'  gate '+fr.g.toFixed(4)+(fr.rs<fr.g?'  (below gate)':'')+'\nattack '+fr.rd.toFixed(4)+(fr.onset?'  ONSET':'');
+ if(L)t+='\n— last note —\ndetected '+nm(L.det)+' → written '+nm(L.chosen)+(L.altDown?' [alt↓]':'')+(L.altUp?' [alt↑]':'')+'  pos '+(L.pos?ROMAN[L.pos]:'—')+'\n'+L.cands.map((c,i)=>(i?'  ':'▶ ')+c.c+c.f+' cost '+c.cost).join('\n');
+ if(REC&&REC.fe){const S=REC.fe.st,I=REC.info||{};t+='\n— capture (v4) —\n'+REC.kind+'  frames '+S.frames+'  max gap '+(S.maxGap*1000).toFixed(0)+'ms\nhigh-pass 105 Hz  noise '+(S.noise||0).toFixed(4)+'  gate '+S.gate.toFixed(4)+
+  '\ntrack: EC '+I.ec+'  NS '+I.ns+'  AGC '+I.agc+'  '+(I.sr||'?')+'Hz  ch '+(I.ch||'?')+(I.lat!=null?'  lat '+(+I.lat).toFixed(3):'');}
+ if(DBG.cal)t+='\ncalibrated gate '+DBG.cal.g.toFixed(4)+' → sens '+DBG.cal.sv;
+ $('dbg').textContent=t||'debug: no audio yet';}
+$('dbgBtn').onclick=()=>{DBG.on=!DBG.on;$('dbgBtn').classList.toggle('on',DBG.on);$('dbg').style.display=DBG.on?'block':'none';dbgDraw();};
+
+// ---------- «הקלט קטע לבדיקה»: 10 s of raw mic audio -> WAV file on this device only (nothing is uploaded) ----------
+function wavBlob(chunks,sr){let n=0;chunks.forEach(c=>n+=c.length);const buf=new ArrayBuffer(44+n*2),v=new DataView(buf);let o=0;
+ const ws=s=>{for(let i=0;i<s.length;i++)v.setUint8(o++,s.charCodeAt(i));},u32=x=>{v.setUint32(o,x,true);o+=4;},u16=x=>{v.setUint16(o,x,true);o+=2;};
+ ws('RIFF');u32(36+n*2);ws('WAVE');ws('fmt ');u32(16);u16(1);u16(1);u32(sr);u32(sr*2);u16(2);u16(16);ws('data');u32(n*2);
+ chunks.forEach(c=>{for(let i=0;i<c.length;i++){const x=Math.max(-1,Math.min(1,c[i]));v.setInt16(o,x<0?x*0x8000:x*0x7fff,true);o+=2;}});return new Blob([buf],{type:'audio/wav'});}
+async function recordSample(){if(REC||DEMO||SAMPLE)return;let st;
+ try{st=await navigator.mediaDevices.getUserMedia(MIC_C);}catch(e){toast('המיקרופון לא זמין');return;}
+ const A=ac(),src=A.createMediaStreamSource(st),sp=A.createScriptProcessor(4096,1,1),chunks=[],sr=A.sampleRate,need=sr*10;let got=0;
+ SAMPLE={st};$('sample').classList.add('on');
+ sp.onaudioprocess=ev=>{if(got>=need)return;const d=ev.inputBuffer.getChannelData(0),take=Math.min(d.length,need-got);chunks.push(new Float32Array(d.subarray(0,take)));got+=take;
+  $('sample').textContent='🎙 מקליט קטע… '+Math.max(0,Math.ceil((need-got)/sr))+' שנ׳';
+  if(got>=need){sp.disconnect();src.disconnect();st.getTracks().forEach(t=>t.stop());SAMPLE=null;$('sample').classList.remove('on');$('sample').textContent='🎙 הקלט קטע לבדיקה (10 שנ׳)';saveWav(wavBlob(chunks,sr));}};
+ const mute=A.createGain();mute.gain.value=0;src.connect(sp);sp.connect(mute).connect(A.destination);toast('מקליט 10 שניות… נגן כרגיל');}
+let SAMPLE=null;
+function saveWav(blob){const d=new Date(),p=n=>String(n).padStart(2,'0'),name='bouzouki-sample-'+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds())+'.wav';
+ const bridge=(window.BZK&&window.BZK.saveFile)?window.BZK:(parent!==window&&parent.BZK&&parent.BZK.saveFile?parent.BZK:null);
+ if(bridge){const r=new FileReader();r.onload=()=>{let ok=false;try{ok=bridge.saveFile(name,String(r.result).split(',')[1]);}catch(e){}toast(ok?'נשמר בטאבלט: Download/BouzoukiAcademy/'+name:'השמירה נכשלה');};r.readAsDataURL(blob);return;}
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000);toast('הקובץ ירד: '+name);}
+$('sample').onclick=recordSample;$('cal').onclick=calibrateNoise;
+try{const sv=localStorage.getItem('bzk_comp_sens');if(sv!=null)$('sens').value=sv;}catch(e){}
+
+// ---------- note events ----------
+function addNote(e){const t=e.t+TOFF,prev=NOTES[NOTES.length-1];
+ const midi=chooseOctave(e,HAND,prev?{course:prev.course,fret:prev.fret,midi:prev.midi}:null);
+ if(isOctaveFlip(prev,midi,t))return;                                  // same pluck re-read an octave away
+ if(!e._g&&!$('keepTrem').checked&&isGlide(prev,midi,t)){NOTES.pop();HAND.p=prev.hp0;e._g=1;requantize();return addNote(e);}   // pitch settled / slide: replace
+ if(mergeTrem(prev,midi,t,$('keepTrem').checked)){ball.hit=performance.now();drawScore(false);return;}
+ const pl=placeNote(midi,HAND,prev?{course:prev.course,fret:prev.fret}:null);if(!pl)return;
+ DBG.last={det:e.midi,chosen:midi,altDown:!!e.altDown,altUp:!!e.altUp,pos:HAND.p,cands:scoreAll(midi,HAND,prev?{course:prev.course,fret:prev.fret}:null).slice(0,4)};
+ if(prev&&prev.end==null)prev.end=t;
+const hp0=HAND.p;updateHand(HAND,pl.fret);const fg=fingerOf(pl.fret,HAND.p);DBG.last.pos=HAND.p;DBG.last.wrote=pl.course+pl.fret;if(DBG.on)dbgDraw();
+ NOTES.push({hp0,midi,t,end:null,course:pl.course,fret:pl.fret,finger:fg,pos:HAND.p,cents:e.cents||0,beats:1,lastHit:t,trem:1});DIRTY=true;
+ SEL=NOTES.length-1;requantize();moveBall(pl.course,pl.fret,fg);drawScore(true);showPitch(midi+(e.cents||0)/100);$('posLbl').textContent=posText();}
+function endNote(t){t+=TOFF;const n=NOTES[NOTES.length-1];if(n&&n.end==null){n.end=t;requantize();drawScore(false);}}
+
+// ---------- neck (drawing adapted from visualizer-v10, horizontal: nut left, D course on top) ----------
+const nk=$('neck'),g=nk.getContext('2d');let G={};
+function layoutNeck(){const wrap=$('neckWrap'),W=Math.round(Math.max(wrap.clientWidth,22*30+70)),H=W<700?200:220;
+ const nx=60,nw=W-nx-18,fw=nw/NF;G={W,H,nx,nw,fw,y0:36,nh:H-36-44};const d=devicePixelRatio||1;nk.width=Math.round(W*d);nk.height=Math.round(H*d);nk.style.width=W+'px';nk.style.height=H+'px';g.setTransform(nk.width/W,0,0,nk.height/H,0,0);}
+const fretX=f=>G.nx+f*G.fw;                                  // x of fret wire f (0 = nut)
+const fretCenter=f=>f===0?G.nx-16:(fretX(f-1)+fretX(f))/2;    // midpoint between wires f-1 and f
+const fx=fretX, mx=fretCenter;
+const CROW={D:0,A:1,F:2,C:3},PAIR=3.6;
+const cy=c=>G.y0+G.nh*(CROW[c]+.5)/4;
+function drawNeck(){const y0=G.y0,y1=G.y0+G.nh,x0=fx(0),x1=fx(NF);g.fillStyle='#000';g.fillRect(0,0,G.W,G.H);
+ const wg=g.createLinearGradient(0,y0,0,y1);wg.addColorStop(0,'#2a1a10');wg.addColorStop(.5,'#3a2516');wg.addColorStop(1,'#2a1a10');g.fillStyle=wg;g.fillRect(x0,y0,x1-x0,y1-y0);
+ g.save();g.globalAlpha=.05;g.strokeStyle='#000';for(let i=0;i<26;i++){const y=Math.round(y0+3+i*(G.nh-6)/25)+.5;g.lineWidth=.6+(i%3)*.4;g.beginPath();g.moveTo(x0,y);g.lineTo(x1,y);g.stroke();}g.restore();
+ // hand-position band (index finger fret p .. pinky p+3)
+ if(HAND.p!=null){const p=HAND.p,bx=fx(p-1),bw=fx(Math.min(NF,p+3))-bx;g.fillStyle=HAND.range?'rgba(255,179,92,.16)':'rgba(47,211,242,.13)';g.fillRect(bx,y0,bw,G.nh);
+  g.strokeStyle=HAND.range?AMB:'rgba(47,211,242,.7)';g.lineWidth=2;g.strokeRect(bx+1,y0+1,bw-2,G.nh-2);
+  g.save();g.direction='rtl';g.font='800 17px -apple-system,Inter,Arial';g.textAlign='center';g.textBaseline='middle';g.fillStyle=HAND.range?AMB:TQ;g.fillText('פוזיציה '+ROMAN[p],bx+bw/2,y0-15);g.restore();}
+ g.fillStyle='rgba(150,140,130,.55)';for(const f of [3,5,7,9,15,17,19,21]){g.beginPath();g.arc(mx(f),y0+G.nh/2,3.6,0,7);g.fill();}
+ for(const dy of [-.25,.25]){g.beginPath();g.arc(mx(12),y0+G.nh/2+dy*G.nh,3.6,0,7);g.fill();}
+ for(let f=1;f<=NF;f++){const x=fx(f);g.fillStyle='#9a9aa2';g.fillRect(x-1,y0,2,G.nh);g.fillStyle='rgba(255,255,255,.35)';g.fillRect(x-1,y0,.6,G.nh);}
+ g.fillStyle='#efe6cf';g.fillRect(x0-4,y0,5,G.nh);
+ for(const c of CO){const y=cy(c),w=(c==='C'||c==='F')?1.4:1.05;for(const s of [-1,1]){g.fillStyle='#d8d8de';g.fillRect(x0-4,y+s*PAIR/2-w/2,x1-x0+4,w);g.fillStyle='rgba(0,0,0,.35)';g.fillRect(x0,y+s*PAIR/2+w/2,x1-x0,.6);}}
+ g.font='700 20px -apple-system,Inter,Arial';g.textAlign='center';g.textBaseline='middle';
+ const sl=$('neckWrap').scrollLeft;if(sl>0){g.fillStyle='rgba(0,0,0,.82)';g.fillRect(sl,y0,30,G.nh);}for(const c of CO){g.fillStyle=HAND.lockD&&c==='D'?AMB:TQ;g.fillText(c,sl+15,cy(c));}
+ g.font='600 17px -apple-system,Inter,Arial';g.fillStyle='#e2e2ea';for(let f=1;f<=NF;f++){if([3,5,7,9,12,15,17,19,21].includes(f))g.fillText(f,mx(f),y1+22);}
+ g.fillStyle='#8a8a94';g.fillText('0',mx(0)+4,y1+22);}
+function ballXY(c,f){return [fretCenter(f),cy(c)];}
+function moveBall(c,f,fg){const now=performance.now();ball.from=ball.to?{c:ball.to.c,f:ball.to.f}:{c,f};ball.to={c,f};ball.t0=now;ball.hit=now;ball.c=c;ball.f=f;ball.fg=fg;
+ const tx=fretCenter(f),w=$('neckWrap');if(tx<w.scrollLeft+60||tx>w.scrollLeft+w.clientWidth-60)w.scrollTo({left:Math.max(0,tx-w.clientWidth/2),behavior:'smooth'});}
+function drawBall(now){if(!ball.to)return;const k=Math.min(1,(now-ball.t0)/140),e=1-Math.pow(1-k,3);const [ax,ay]=ballXY(ball.from.c,ball.from.f),[bx,by]=ballXY(ball.to.c,ball.to.f);
+ ball.x=ax+(bx-ax)*e;ball.y=ay+(by-ay)*e;
+ const X=ball.x,Y=ball.y,pulse=1+.5*Math.max(0,1-(now-ball.hit)/260);
+ g.save();g.shadowColor=ORG;g.shadowBlur=26*pulse;g.fillStyle='rgba(255,122,0,'+(.3*pulse)+')';g.beginPath();g.arc(X,Y,17*pulse,0,7);g.fill();g.restore();
+ g.save();g.shadowColor='rgba(255,140,0,.9)';g.shadowBlur=14;g.fillStyle=ORG;g.beginPath();g.arc(X,Y,12,0,7);g.fill();g.restore();g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.arc(X,Y,12,0,7);g.stroke();
+ if(k>=1){g.fillStyle='#fff';g.font='800 14px -apple-system,Inter,Arial';g.textAlign='center';g.textBaseline='middle';g.fillText(ball.fg===0?'○':ball.fg,X,Y+.5);}}
+// automated geometry assertion: every course x fret 0-22 -> ball centre between its two fret wires and on the string's y
+function geomCheck(){const bad=[];for(const c of CO)for(let f=0;f<=NF;f++){const [x,y]=ballXY(c,f);
+  if(f===0){if(!(x<fretX(0)))bad.push(c+f+': open ball not left of nut');}
+  else if(!(x>fretX(f-1)&&x<fretX(f)&&Math.abs(x-(fretX(f-1)+fretX(f))/2)<0.01))bad.push(c+f+': x '+x.toFixed(1)+' not between '+fretX(f-1).toFixed(1)+'..'+fretX(f).toFixed(1));
+  if(Math.abs(y-cy(c))>0.01)bad.push(c+f+': y off string');}
+ const band=HAND.p!=null?{x0:fretX(HAND.p-1),x1:fretX(Math.min(NF,HAND.p+3))}:null;
+ return {checked:CO.length*(NF+1),bad,W:G.W,fw:G.fw,band,ball:ball.to?{c:ball.to.c,f:ball.to.f,x:ball.x,y:ball.y,expX:fretCenter(ball.to.f),expY:cy(ball.to.c)}:null};}
+function loop(now){drawNeck();drawBall(now);requestAnimationFrame(loop);}
+nk.addEventListener('pointerdown',ev=>{const r=nk.getBoundingClientRect(),x=ev.clientX-r.left,y=ev.clientY-r.top;
+ let c=CO[0],bd=1e9;for(const k of CO){const d=Math.abs(cy(k)-y);if(d<bd){bd=d;c=k;}}
+ let f=x<fx(0)?0:Math.min(NF,Math.ceil((x-fx(0))/G.fw));const m=OPEN[c]+f;pluckAt(m,0,0.6);
+ if(!HAND.range)anchorTo(HAND,f);const fg=fingerOf(f,HAND.p);
+ if(SEL>=0&&NOTES[SEL]){const n=NOTES[SEL],same=n.midi===m;Object.assign(n,{course:c,fret:f,midi:m,finger:fg,pos:HAND.p,pinned:true});DIRTY=true;moveBall(c,f,fg);drawScore(false);showPitch(m);
+  toast((same?'המיקום תוקן: מיתר '+c+' סריג '+f:'התו הוחלף ל-'+nname(m).he+' · מיתר '+c+' סריג '+f)+' · '+posText());}
+ else{moveBall(c,f,fg);showPitch(m);}$('posLbl').textContent=posText();});
+$('neckWrap').addEventListener('scroll',()=>{},{passive:true});
+
+// ---------- score: 5-line staff (treble 8vb) + 4-line tab, aligned ----------
+const sc=$('score'),s2=sc.getContext('2d');const GAP=13,STX=128,TABGAP=24;let SL={};
+const WID={0.5:52,1:68,2:100};
+function layoutScore(){const wrap=$('scoreWrap');let need=STX+20;NOTES.forEach(n=>need+=WID[n.beats]||68);const W=Math.max(wrap.clientWidth,need+60),H=404;
+ SL={W,H,top:82,tabTop:262};const d=devicePixelRatio||1;sc.width=W*d;sc.height=H*d;sc.style.width=W+'px';sc.style.height=H+'px';s2.setTransform(d,0,0,d,0,0);}
+const lineY=i=>SL.top+i*GAP;
+function diat(w){const pc=((w%12)+12)%12,o=Math.floor(w/12)-1;const sp=SPELL[pc];return {d:o*7+sp[0],acc:sp[1]};}
+const yOfD=d=>lineY(4)-(d-30)*GAP/2;
+function drawScore(scroll){layoutScore();const x=s2;x.fillStyle='#f4f1e8';x.fillRect(0,0,SL.W,SL.H);x.strokeStyle='#222';x.fillStyle='#222';
+ x.lineWidth=1.3;for(let i=0;i<5;i++){x.beginPath();x.moveTo(12,lineY(i));x.lineTo(SL.W-12,lineY(i));x.stroke();}
+ x.font='92px "Noto Music","Noto Sans Symbols 2","Apple Symbols",serif';x.textAlign='left';x.textBaseline='alphabetic';x.fillText('\u{1D11E}',16,lineY(4)+22);
+ x.font='700 18px Georgia,serif';x.fillText('8',47,lineY(4)+64);
+ x.font='700 30px Georgia,serif';x.textAlign='center';x.fillText('4',88,lineY(1)+1);x.fillText('4',88,lineY(3)+1);
+ x.lineWidth=1.2;for(let i=0;i<4;i++){const y=SL.tabTop+i*TABGAP;x.beginPath();x.moveTo(12,y);x.lineTo(SL.W-12,y);x.stroke();}
+ x.font='700 20px -apple-system,Inter,Arial';x.textBaseline='middle';x.textAlign='center';['D','A','F','C'].forEach((c,i)=>{const yy=SL.tabTop+i*TABGAP;x.fillStyle='#f4f1e8';x.fillRect(20,yy-11,22,22);x.fillStyle='#0b7f95';x.fillText(c,31,yy+1);});
+ x.save();x.direction='rtl';x.fillStyle='#8a5a2a';x.font='700 15px -apple-system,Inter,Arial';x.textAlign='center';x.fillText('אצבע',62,SL.tabTop+3*TABGAP+58);x.restore();x.textAlign='center';
+ x.font='800 21px Georgia,serif';x.fillStyle='#f4f1e8';x.fillRect(56,SL.tabTop+TABGAP*1.5-12,50,24);x.fillStyle='#222';x.fillText('TAB',81,SL.tabTop+TABGAP*1.5+1);
+ let px=STX,beat=0;const pos=[];
+ NOTES.forEach((n,i)=>{const w=WID[n.beats]||68;pos.push({x:px+18,n,i,beat});beat+=n.beats;px+=w;
+  if(Math.abs(beat/4-Math.round(beat/4))<1e-6&&i<NOTES.length-1){const bx=px-12;x.strokeStyle='#222';x.lineWidth=1.4;x.beginPath();x.moveTo(bx,lineY(0));x.lineTo(bx,lineY(4));x.stroke();x.beginPath();x.moveTo(bx,SL.tabTop);x.lineTo(bx,SL.tabTop+3*TABGAP);x.stroke();}});
+ const beamed={};for(let k=0;k<pos.length-1;k++){const a=pos[k],b=pos[k+1];if(a.n.beats===.5&&b.n.beats===.5&&Math.abs(a.beat-Math.round(a.beat))<1e-6&&!beamed[k]){beamed[k]='a';beamed[k+1]='b';}}
+ const stems={};
+ pos.forEach((p,k)=>{const n=p.n,w=n.midi+12,{d,acc}=diat(w),y=yOfD(d),hi=p.i===SEL;const col=hi?'#0b7f95':'#1a1a1a';x.strokeStyle=col;x.fillStyle=col;
+  x.lineWidth=1.3;for(let L=28;L>=d;L-=2){const ly=yOfD(L);x.beginPath();x.moveTo(p.x-12,ly);x.lineTo(p.x+12,ly);x.stroke();}
+  for(let L=40;L<=d;L+=2){const ly=yOfD(L);x.beginPath();x.moveTo(p.x-12,ly);x.lineTo(p.x+12,ly);x.stroke();}
+  if(acc){x.font='26px "Noto Music","Noto Sans Symbols 2",serif';x.textAlign='center';x.textBaseline='middle';x.fillText(acc>0?'♯':'♭',p.x-19,y-(acc<0?4:0));}
+  x.save();x.translate(p.x,y);x.rotate(-0.35);x.beginPath();x.ellipse(0,0,7.6,5.4,0,0,7);if(n.beats===2){x.lineWidth=2.2;x.stroke();}else x.fill();x.restore();
+  stems[p.i]={up:d<34,y,x:p.x};
+  // position change marker above the staff
+  const pv=k>0?pos[k-1].n:null;if(n.pos&&(!pv||pv.pos!==n.pos)){x.save();x.fillStyle='#c25a00';x.font='800 16px Georgia,serif';x.textAlign='center';x.textBaseline='middle';x.fillText(ROMAN[n.pos],p.x,SL.top-46);x.restore();}
+  const ty=SL.tabTop+['D','A','F','C'].indexOf(n.course)*TABGAP;x.font='800 21px -apple-system,Inter,Arial';x.textAlign='center';x.textBaseline='middle';const tw=x.measureText(String(n.fret)).width+8;
+  x.fillStyle='#f4f1e8';x.fillRect(p.x-tw/2,ty-12,tw,24);x.fillStyle=hi?'#0b7f95':'#111';x.fillText(n.fret,p.x,ty+1);
+  if(hi){x.strokeStyle=ORG;x.lineWidth=2.5;x.beginPath();x.arc(p.x,ty,15,0,7);x.stroke();}
+  x.strokeStyle='#666';x.lineWidth=1.4;x.beginPath();x.moveTo(p.x,SL.tabTop+3*TABGAP+16);x.lineTo(p.x,SL.tabTop+3*TABGAP+(n.beats===2?30:40));x.stroke();
+  x.fillStyle='#8a5a2a';x.font='700 16px -apple-system,Inter,Arial';x.fillText(n.finger===0?'○':n.finger,p.x,SL.tabTop+3*TABGAP+58);
+ });
+ pos.forEach((p,k)=>{const n=p.n,s=stems[p.i],col=p.i===SEL?'#0b7f95':'#1a1a1a';x.strokeStyle=col;x.fillStyle=col;x.lineWidth=1.6;
+  let up=s.up;if(beamed[k]==='a'){const o=stems[pos[k+1].i];up=(s.y+o.y)/2>lineY(2);}if(beamed[k]==='b')up=stems[pos[k-1].i].beamUp;s.beamUp=up;
+  const sx=up?p.x+7:p.x-7;let ey=up?s.y-3.4*GAP:s.y+3.4*GAP;
+  if(beamed[k]){const o=beamed[k]==='a'?stems[pos[k+1].i]:stems[pos[k-1].i];ey=up?Math.min(s.y,o.y)-3.4*GAP:Math.max(s.y,o.y)+3.4*GAP;s.ey=ey;s.sx=sx;}
+  x.beginPath();x.moveTo(sx,s.y);x.lineTo(sx,ey);x.stroke();
+  if(n.trem>=3){x.lineWidth=3;const my=s.y+(ey-s.y)*0.62;for(let j=-1;j<=1;j++){x.beginPath();x.moveTo(sx-6,my+j*6+3);x.lineTo(sx+6,my+j*6-3);x.stroke();}}
+  if(n.beats===.5&&!beamed[k]){x.beginPath();if(up){x.moveTo(sx,ey);x.quadraticCurveTo(sx+12,ey+12,sx+9,ey+26);}else{x.moveTo(sx,ey);x.quadraticCurveTo(sx+12,ey-12,sx+9,ey-26);}x.lineWidth=2.4;x.stroke();}
+  if(beamed[k]==='b'){const a=stems[pos[k-1].i];x.lineWidth=5.5;x.beginPath();x.moveTo(a.sx,a.ey);x.lineTo(s.sx,s.ey);x.stroke();
+   x.strokeStyle='#666';x.lineWidth=3;const yb=SL.tabTop+3*TABGAP+40;x.beginPath();x.moveTo(pos[k-1].x,yb);x.lineTo(p.x,yb);x.stroke();}
+  else if(n.beats===.5&&!beamed[k]){x.strokeStyle='#666';x.lineWidth=2;const yb=SL.tabTop+3*TABGAP+40;x.beginPath();x.moveTo(p.x,yb);x.lineTo(p.x+8,yb-6);x.stroke();}
+ });
+ const sl=$('scoreWrap').scrollLeft;if(sl>STX-40){x.fillStyle='rgba(244,241,232,.95)';x.fillRect(sl,SL.tabTop-14,34,3*TABGAP+28);x.font='700 19px -apple-system,Inter,Arial';x.textAlign='center';x.textBaseline='middle';['D','A','F','C'].forEach((c,i)=>{x.fillStyle='#0b7f95';x.fillText(c,sl+17,SL.tabTop+i*TABGAP+1);});}
+ SL.pos=pos;$('scoreInfo').textContent='· '+NOTES.length+' תווים · '+(Math.round(beat*10)/10)+' פעמות'+(DIRTY&&NOTES.length?' · לא נשמר':'');
+ if(scroll){const w=$('scoreWrap');w.scrollLeft=Math.max(0,px-w.clientWidth+80);}}
+sc.addEventListener('pointerdown',ev=>{if(!SL.pos)return;const r=sc.getBoundingClientRect(),xx=ev.clientX-r.left;let b=-1,bd=30;SL.pos.forEach(p=>{const d=Math.abs(p.x-xx);if(d<bd){bd=d;b=p.i;}});
+ if(b>=0){SEL=b;const n=NOTES[b];moveBall(n.course,n.fret,n.finger);showPitch(n.midi);pluckAt(n.midi,0,0.6);drawScore(false);toast('תו '+(b+1)+' מסומן · הקש על הצוואר כדי לתקן');}});
+
+// ---------- new page / continue ----------
+function clearPage(){NOTES=[];SEL=-1;TOFF=0;DIRTY=false;const keep={lockD:HAND.lockD,range:HAND.range};HAND=makeHand();Object.assign(HAND,keep);if(HAND.range)HAND.p=HAND.range[0];
+ ball.to=null;ball.from=null;ball.x=null;$('scoreWrap').scrollLeft=0;$('neckWrap').scrollLeft=0;drawScore(false);$('posLbl').textContent=posText();$('bigNote').innerHTML='—<small>נגן תו בבוזוקי</small>';}
+function contOffset(){const n=NOTES[NOTES.length-1];if(!n)return 0;return (n.end!=null?n.end:n.t+60/bpm())+60/bpm();}
+let askCb=null;
+function startGuard(fn){if(REC||DEMO)return;if(NOTES.length&&DIRTY){askCb=fn;$('ask').style.display='flex';}else{clearPage();fn();}}
+$('askNew').onclick=()=>{$('ask').style.display='none';clearPage();askCb&&askCb();};
+$('askCont').onclick=()=>{$('ask').style.display='none';TOFF=contOffset();askCb&&askCb();};
+$('askCancel').onclick=()=>{$('ask').style.display='none';askCb=null;};
+$('newp').onclick=()=>{if(REC||DEMO)recStop();stopPlay();clearPage();toast('דף חדש');};
+
+// ---------- recording ----------
+async function recStart(){stopPlay();
+ let st;try{st=await navigator.mediaDevices.getUserMedia(MIC_C);}catch(e){toast('המיקרופון לא זמין. אשר גישה למיקרופון ונסה שוב.');return;}
+ const A=ac();if(A.state==='suspended')await A.resume();const src=A.createMediaStreamSource(st);const t0=A.currentTime;
+ const fe=makeFrontEnd(A.sampleRate,{onStart:e=>{e.t-=t0;addNote(e);},onEnd:t=>endNote(t-t0),onPitch:m=>showPitch(m),onFrame:dbgFrame},{getGate:gateVal,maxMidi:84});
+ REC={st,src,fe,A,t0,info:trackInfo(st),kind:'…'};const nd=await micNode(A,src,(d,tEnd)=>fe.push(d,tEnd));REC.node=nd;REC.kind=nd.kind;
+ $('rec').classList.add('on');$('rec').textContent='● מקליט...';$('stop').disabled=false;$('demo').disabled=true;metStart();
+ status('<b>מאזין</b> · נגן תו אחד בכל פעם, קרוב למיקרופון'+(TOFF?' · ממשיך את הדף':''));}
+function recStop(){if(REC){if(REC.node)REC.node.stop();REC.fe.flush(REC.A.currentTime-REC.t0);try{REC.st.getTracks().forEach(t=>t.stop());}catch(e){}REC=null;}
+ if(DEMO){clearInterval(DEMO.iv);DEMO.fe.flush(DEMO.t);DEMO=null;}
+ metStop();$('rec').classList.remove('on');$('rec').textContent='● הקלט';$('rec').disabled=false;$('demo').disabled=false;$('stop').disabled=!PLAY;
+ requantize();drawScore(false);status(NOTES.length?'נכתבו <b>'+NOTES.length+'</b> תווים · אפשר לנגן, לתקן או לשמור':'מוכן');}
+
+// ---------- demo: synthesized phrase through the SAME detector (Hijaz on D, climbs to position XI, tremolo at the end) ----------
+const DEMO_PHRASE=[[62,1],[63,.5],[66,.5],[67,1],[69,1],[70,.5],[72,.5],[74,1],[75,.5],[74,.5],[72,.5],[70,.5],[69,2,'trem']];
+function demoStart(){stopPlay();const sr=48000,k=60/bpm();
+ let tt=0.15;const total=DEMO_PHRASE.reduce((a,p)=>a+p[1],0)*k+0.6,N=Math.floor(sr*total),sig=new Float32Array(N);
+ const A=ac(),startAt=A.currentTime+0.08;
+ const put=(m,at,len)=>{const pb=pluckBuf(m,sr),s0=Math.floor(at*sr);len=Math.min(pb.length,Math.floor(len*sr));for(let i=0;i<len&&s0+i<N;i++)sig[s0+i]+=pb[i]*Math.min(1,(len-i)/300);pluckAt(m,startAt+at,0.6);};
+ DEMO_PHRASE.forEach(([m,b,tr])=>{if(tr){const step=0.09;for(let a=0;a<b*k*0.9;a+=step)put(m,tt+a,step*0.98);}else put(m,tt,b*k*0.96);tt+=b*k;});
+ const fe=makeFrontEnd(sr,{onStart:e=>addNote(e),onEnd:t=>endNote(t),onPitch:m=>showPitch(m),onFrame:dbgFrame},{getGate:()=>0.006,maxMidi:84});
+ const hop=1024;let pos=0;const t0=performance.now();
+ DEMO={fe,t:0,iv:setInterval(()=>{const target=Math.min(N,Math.floor(((performance.now()-t0)/1000)*sr));while(pos+hop<=target){fe.push(sig.subarray(pos,pos+hop),(pos+hop)/sr);DEMO.t=(pos+hop)/sr;pos+=hop;}
+  if(pos+hop>N){recStop();toast('הדמו הסתיים · '+NOTES.length+' תווים זוהו מהצליל');}},20)};
+ $('rec').disabled=true;$('demo').disabled=true;$('stop').disabled=false;metStart();status('<b>דמו</b> · צליל בוזוקי מסונתז עובר דרך אותו מזהה צליל של המיקרופון');}
+
+// ---------- playback ----------
+function playAll(){if(REC||DEMO)return;if(!NOTES.length){toast('אין עדיין תווים לנגן');return;}stopPlay();const A=ac(),k=60/bpm();let t=A.currentTime+0.1;const sched=[];
+ NOTES.forEach((n,i)=>{if(n.trem>=3){for(let a=0;a<n.beats*k*0.9;a+=0.09)pluckAt(n.midi,t+a,0.5);}else pluckAt(n.midi,t,0.7);
+  sched.push(setTimeout(()=>{SEL=i;moveBall(n.course,n.fret,n.finger);showPitch(n.midi);drawScore(false);const w=$('scoreWrap'),p=SL.pos[i];if(p&&(p.x>w.scrollLeft+w.clientWidth-60||p.x<w.scrollLeft))w.scrollLeft=p.x-80;},(t-A.currentTime)*1000));t+=n.beats*k;});
+ sched.push(setTimeout(()=>stopPlay(),(t-A.currentTime)*1000+200));PLAY={sched};$('stop').disabled=false;metStart();status('<b>מנגן</b> מההתחלה · '+bpm()+' BPM');}
+function stopPlay(){if(!PLAY)return;PLAY.sched.forEach(clearTimeout);PLAY=null;metStop();$('stop').disabled=!(REC||DEMO);if(!REC&&!DEMO)status('מוכן');}
+
+// ---------- save to «שירים» (localStorage bzk_user_songs, same format as reel-engine-v11) ----------
+function saveSong(){if(REC||DEMO)recStop();if(!NOTES.length){toast('אין תווים לשמור');return;}requantize();const k=60/bpm();let t=0;
+ const events=NOTES.map((n,i)=>{const e={t:+t.toFixed(3),course:n.course,fret:n.fret,dur:+(n.beats*k*0.95).toFixed(3),pick:i%2?'up':'down',finger:n.finger};t+=n.beats*k;return e;});
+ const title=$('sname').value.trim()||'🎼 לחן חדש '+new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+ const song={id:'c'+Date.now(),title,bpm:bpm(),scale:'מהמלחין',est:'נכתב במלחין · '+events.length+' תווים',scaleEst:true,chords:{},user:true,events,
+  composer:{v:3,notes:NOTES.map(n=>({midi:n.midi,beats:n.beats,course:n.course,fret:n.fret,finger:n.finger,pos:n.pos,trem:n.trem}))}};
+ let U=[];try{U=JSON.parse(localStorage.getItem('bzk_user_songs')||'[]');}catch(e){U=[];}U.push(song);localStorage.setItem('bzk_user_songs',JSON.stringify(U));DIRTY=false;drawScore(false);
+ $('mtext').innerHTML='השיר <b>«'+title.replace(/</g,'&lt;')+'»</b> נשמר עם '+events.length+' תווים, בקצב <bdi>'+bpm()+' BPM</bdi>.<br>הוא מופיע עכשיו בלשונית <b>«שירים»</b>.';$('modal').style.display='flex';$('toast').style.display='none';
+ try{parent!==window&&parent.postMessage({type:'bzk-song-saved',id:song.id},'*');}catch(e){}}
+$('openSongs').onclick=ev=>{if(EMBED&&parent!==window){ev.preventDefault();$('modal').style.display='none';parent.postMessage({type:'bzk-open-songs'},'*');}};
+
+// ---------- locks & options ----------
+for(let f=1;f<=19;f++){$('pFrom').add(new Option(f,f));}for(let f=4;f<=22;f++){$('pTo').add(new Option(f,f));}$('pFrom').value=1;$('pTo').value=5;
+function applyRange(){if(!$('lockP').classList.contains('on')){HAND.range=null;}else{let a=+$('pFrom').value,b=+$('pTo').value;if(b<a+2)b=Math.min(22,a+3);$('pTo').value=b;HAND.range=[a,b];HAND.p=a;}$('posLbl').textContent=posText();}
+$('lockD').onclick=()=>{HAND.lockD=!HAND.lockD;$('lockD').classList.toggle('on',HAND.lockD);toast(HAND.lockD?'נעול למיתר D (מיתר אחר רק אם התו נמוך מדי)':'נעילת המיתר בוטלה');};
+$('lockP').onclick=()=>{$('lockP').classList.toggle('on');applyRange();toast(HAND.range?'פוזיציה נעולה: סריגים '+HAND.range[0]+'–'+HAND.range[1]:'נעילת הפוזיציה בוטלה');};
+$('pFrom').onchange=$('pTo').onchange=applyRange;
+
+// ---------- wiring ----------
+$('rec').onclick=()=>startGuard(recStart);$('stop').onclick=()=>{recStop();stopPlay();};
+$('play').onclick=playAll;$('demo').onclick=()=>startGuard(demoStart);
+$('undo').onclick=()=>{if(!NOTES.length)return;NOTES.pop();SEL=NOTES.length-1;const n=NOTES[SEL];if(n){HAND.p=n.pos;moveBall(n.course,n.fret,n.finger);}else{HAND.p=HAND.range?HAND.range[0]:null;ball.to=null;}requantize();drawScore(false);$('posLbl').textContent=posText();toast('התו האחרון נמחק');};
+$('save').onclick=saveSong;$('mclose').onclick=()=>$('modal').style.display='none';
+$('bpm').onchange=()=>{requantize();drawScore(false);};
+$('met').onchange=()=>{if(REC||DEMO||PLAY)metStart();};
+$('scoreWrap').addEventListener('scroll',()=>drawScore(false),{passive:true});
+addEventListener('resize',()=>{layoutNeck();drawScore(false);});
+if(window.ResizeObserver)new ResizeObserver(()=>{const w=Math.round(Math.max($('neckWrap').clientWidth,22*30+70));if(w!==G.W){layoutNeck();drawScore(false);}}).observe($('neckWrap'));
+layoutNeck();drawScore(false);requestAnimationFrame(loop);
+document.fonts&&document.fonts.ready.then(()=>drawScore(false));
+window.COMPOSER={demo:()=>startGuard(demoStart),state:()=>({notes:NOTES,hand:HAND}),geomCheck,place:(c,f)=>moveBall(c,f,fingerOf(f,HAND.p))};
+</script>
+</body>
+</html>
