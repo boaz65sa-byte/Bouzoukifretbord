@@ -348,6 +348,7 @@ function dbgDraw(){const fr=DBG.fr,L=DBG.last,nm=m=>{const n=nname(m);return n.l
  if(L)t+='\n— last note —\ndetected '+nm(L.det)+' → written '+nm(L.chosen)+(L.altDown?' [alt↓]':'')+(L.altUp?' [alt↑]':'')+'  pos '+(L.pos?ROMAN[L.pos]:'—')+'\n'+L.cands.map((c,i)=>(i?'  ':'▶ ')+c.c+c.f+' cost '+c.cost).join('\n');
  if(REC&&REC.fe){const S=REC.fe.st,I=REC.info||{};t+='\n— capture (v4) —\n'+REC.kind+'  frames '+S.frames+'  max gap '+(S.maxGap*1000).toFixed(0)+'ms\nhigh-pass 105 Hz  noise '+(S.noise||0).toFixed(4)+'  gate '+S.gate.toFixed(4)+
   '\ntrack: EC '+I.ec+'  NS '+I.ns+'  AGC '+I.agc+'  '+(I.sr||'?')+'Hz  ch '+(I.ch||'?')+(I.lat!=null?'  lat '+(+I.lat).toFixed(3):'');}
+ {const B=(window.BZK&&window.BZK.audioInfo)?window.BZK:(parent!==window&&parent.BZK&&parent.BZK.audioInfo?parent.BZK:null);if(B&&REC){try{t+='\n'+B.audioInfo();}catch(e){}}}
  if(DBG.cal)t+='\ncalibrated gate '+DBG.cal.g.toFixed(4)+' → sens '+DBG.cal.sv;
  $('dbg').textContent=t||'debug: no audio yet';}
 $('dbgBtn').onclick=()=>{DBG.on=!DBG.on;$('dbgBtn').classList.toggle('on',DBG.on);$('dbg').style.display=DBG.on?'block':'none';dbgDraw();};
