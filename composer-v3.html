@@ -300,7 +300,7 @@ async function recordSample(){if(REC||DEMO||SAMPLE)return;let st;
 let SAMPLE=null;
 function saveWav(blob){const d=new Date(),p=n=>String(n).padStart(2,'0'),name='bouzouki-sample-'+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds())+'.wav';
  const bridge=(window.BZK&&window.BZK.saveFile)?window.BZK:(parent!==window&&parent.BZK&&parent.BZK.saveFile?parent.BZK:null);
- if(bridge){const r=new FileReader();r.onload=()=>{let ok=false;try{ok=bridge.saveFile(name,String(r.result).split(',')[1]);}catch(e){}toast(ok?'נשמר בטאבלט: Download/'+name:'השמירה נכשלה');};r.readAsDataURL(blob);return;}
+ if(bridge){const r=new FileReader();r.onload=()=>{let ok=false;try{ok=bridge.saveFile(name,String(r.result).split(',')[1]);}catch(e){}toast(ok?'נשמר בטאבלט: Download/BouzoukiAcademy/'+name:'השמירה נכשלה');};r.readAsDataURL(blob);return;}
  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000);toast('הקובץ ירד: '+name);}
 $('sample').onclick=recordSample;
 
