@@ -2916,7 +2916,7 @@ css.textContent=[
 '#addm .v19hd h3{margin:0;font-size:20px;font-weight:800}',
 '#addm button.v19x,#v19rev button.v19x{margin:0;background:transparent;color:#fff;border:0;font-size:26px;line-height:1;padding:0 2px;font-weight:400;width:32px;height:32px}',
 '#addm .v19card{border:2px solid #ff7a00;border-radius:18px;padding:12px 12px 10px;background:#141210}',
-'#addm .v19ct{text-align:center;font-weight:800;font-size:18px;margin:2px 0 6px}',
+'#addm .v19ct{text-align:right;font-weight:800;font-size:18px;margin:2px 0 6px}',
 '#addm .v19desc{text-align:center;color:#e6e6ea;font-size:13.5px;line-height:1.45;margin:0 0 10px}',
 '#addm #v19url{text-align:center;background:#101014;border:1px solid #3a3a42;border-radius:12px;padding:10px 12px}',
 '#addm #v19url::placeholder{color:#8d8d96}',
@@ -2990,8 +2990,8 @@ function mountCard(){
     '<button type="button" data-src="file">קובץ וידאו</button>'+
     '</div>'+
     '<div class="v19acts">'+
-    '<button type="button" class="bp" id="v19go">חלץ מנגינה לגריף</button>'+
     '<button type="button" class="bs" id="v19up">העלה סרטון</button>'+
+    '<button type="button" class="bp" id="v19go">חלץ מנגינה לגריף</button>'+
     '</div>'+
     '<div class="v19st" id="v19st"></div>'+
     '<input id="v19file" type="file" accept="video/*,audio/*,.mp4,.webm,.mov,.mkv,.mp3,.wav,.m4a,.aac,.ogg,.flac,.opus">'+
@@ -3017,9 +3017,9 @@ function mountReview(){
     '<div class="tblwrap"><table><thead><tr><th>זמן</th><th>תו</th><th>מיתר</th><th>שריג</th></tr></thead><tbody id="v19rows"></tbody></table></div>'+
     '<div class="msg" id="v19msg"></div>'+
     '<div class="v19btns">'+
-    '<button type="button" class="go" id="v19learn">התחל ללמוד</button>'+
-    '<button type="button" id="v19apply">החל תיקונים</button>'+
     '<button type="button" id="v19ignore">התעלם</button>'+
+    '<button type="button" id="v19apply">החל תיקונים</button>'+
+    '<button type="button" class="go" id="v19learn">התחל ללמוד</button>'+
     '</div></div></div>');
   document.body.appendChild(root);
   document.getElementById('v19rx').onclick=ignoreReview;
