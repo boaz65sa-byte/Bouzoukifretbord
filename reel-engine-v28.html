@@ -2760,31 +2760,47 @@ function frameGoertzel(buf,sr,p,W,m0,m1,step){
   }
   return {m:bestM,e:bestE,mean:n?sum/n:0};
 }
+function g1(buf,sr,p,W,fr){
+  if(!fr||fr<=0||fr>=sr/2||p<0||p+W>buf.length) return 0;
+  const k=Math.round(W*fr/sr),w=2*Math.PI*k/W,coeff=2*Math.cos(w);
+  let s0=0,s1=0,s2=0;
+  for(let i=0;i<W;i++){s0=buf[p+i]+coeff*s1-s2;s2=s1;s1=s0;}
+  const pwr=s1*s1+s2*s2-coeff*s1*s2; return pwr>0?pwr:0;
+}
+let _bkBuf=null,_bkSr=0,_bkRes=null;
 function detectBackingBass(samples,sr){
-  const W=2048, hop=Math.max(1,Math.round(sr*0.1));
-  if(!samples||samples.length<sr*4) return {on:false,topSec:0,topM:0,frac:0};
+  if(_bkBuf===samples && _bkSr===sr && _bkRes) return _bkRes;
+  const hopSec=0.2, W=1024, hop=Math.max(1,Math.round(sr*hopSec));
+  if(!samples||samples.length<sr*4){ _bkRes={on:false,topSec:0,topM:0,frac:0}; _bkBuf=samples; _bkSr=sr; return _bkRes; }
   const votes=new Map();
   let frames=0, co=0, voted=0;
   for(let p=0;p+W<=samples.length;p+=hop){
     frames++;
-    const low=frameGoertzel(samples,sr,p,W,31,47,1); // G1..B2, below open C
-    const mid=frameGoertzel(samples,sr,p,W,57,86,2); // A3..D6
-    if(low.e>0 && low.e>low.mean*2.2 && low.m>=31 && low.m<48){
-      // group octave equivalents (G1+G2, A1+A2) so a bassline isn't split
-      const key=low.m;
-      const oct=low.m>=43?low.m-12:low.m; // prefer the lower octave as the key
+    let bestM=0,bestE=0,sum=0,n=0;
+    for(let m=31;m<=47;m+=2){
+      const e=g1(samples,sr,p,W,hzOf(m));
+      sum+=e; n++;
+      if(e>bestE){bestE=e;bestM=m;}
+    }
+    const mean=n?sum/n:0;
+    // cheap mid/high energy: first-difference RMS (melody, drums, pick noise)
+    let mid=0; for(let i=1;i<W;i++){const d=samples[p+i]-samples[p+i-1]; mid+=d*d;}
+    mid=Math.sqrt(mid/W);
+    if(bestE>0 && bestE>mean*2.2 && bestM>=31 && bestM<48){
+      const oct=bestM>=43?bestM-12:bestM;
       votes.set(oct,(votes.get(oct)||0)+1);
       voted++;
-      if(mid.e>mid.mean*1.1 && mid.e>low.e*0.10) co++;
+      if(mid>0.008) co++;
     }
   }
-  if(!frames) return {on:false,topSec:0,topM:0,frac:0};
+  if(!frames){ _bkRes={on:false,topSec:0,topM:0,frac:0}; _bkBuf=samples; _bkSr=sr; return _bkRes; }
   let topM=0,topN=0;
   votes.forEach((n,m)=>{if(n>topN){topN=n;topM=m;}});
-  const topSec=topN*0.1, frac=topN/frames, coFrac=voted?co/voted:0;
-  // 8 s of one sub-C3 pitch class (octaves merged). Short solo QA clips (~7 s) cannot fire.
+  const topSec=topN*hopSec, frac=topN/frames, coFrac=voted?co/voted:0;
+  // 8 s of one sub-C3 pitch class. Short solo QA clips (~7 s) cannot fire.
   const on=topSec>=8 && frac>=0.12 && coFrac>=0.15 && topM<48;
-  return {on,topSec,topM,frac,coFrac,frames};
+  _bkRes={on,topSec,topM,frac,coFrac,frames}; _bkBuf=samples; _bkSr=sr;
+  return _bkRes;
 }
 function bandE(buf,sr,t,f0,f1){
   const W=2048,p=Math.floor((t+0.06)*sr);
