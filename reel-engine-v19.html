@@ -2906,7 +2906,8 @@ document.title='בוזוקי · לימוד מנגינה · v19';
 const E=window.v19Engine;
 const OPEN=E.OPEN;
 const STR=[{c:'D',o:'①'},{c:'A',o:'②'},{c:'F',o:'③'},{c:'C',o:'④'}];
-const SOCIAL_MSG='אי אפשר להוריד סרטון מאינסטגרם, פייסבוק, יוטיוב או טיקטוק מכאן. שמור את הסרטון למכשיר והעלה את הקובץ עם «העלה סרטון».';
+const SOCIAL_MSG='אי אפשר לקרוא סרטון מאינסטגרם, פייסבוק או טיקטוק מהקישור. שמור את הסרטון למכשיר והעלה את הקובץ עם «העלה סרטון».';
+const YT_MSG='יוטיוב לא נותן לדפדפן לקרוא את השמע מתוך הקישור. בחר את קובץ הסרטון מהמכשיר — החילוץ יתחיל מיד.';
 const DIRECT_MSG='הקישור הזה אינו קובץ מדיה שהדפדפן יכול לקרוא. שמור את הסרטון למכשיר והעלה את הקובץ.';
 
 const css=document.createElement('style');
@@ -3342,7 +3343,24 @@ async function extractFile(file){
   }catch(e){ setStatus(String(e.message||e), true); }
   finally{ if(go) go.disabled=false; }
 }
+function youtubeId(raw){
+  const s=String(raw||'');
+  let m=s.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:[^#\s]*&)?v=|embed\/|shorts\/|live\/|v\/))([A-Za-z0-9_-]{11})/i);
+  if(m) return m[1];
+  m=s.match(/[?&]v=([A-Za-z0-9_-]{11})/i);
+  if(m && /youtu\.?be/i.test(s)) return m[1];
+  return null;
+}
+let YT_ARM=false;
+function askYouTubeFile(){
+  YT_ARM=true;
+  setPill('yt');
+  setStatus(YT_MSG, false);
+  const input=$('v19file');
+  if(input) input.click();
+}
 async function extractUrl(raw){
+  if(youtubeId(raw)){ askYouTubeFile(); return; }
   const kind=E.classifyUrl(raw);
   if(kind.kind==='empty'){ setStatus('העלה סרטון, או הדבק קישור ישיר לקובץ מדיה.', true); return; }
   if(kind.kind==='bad'){ setStatus('הקישור לא תקין.', true); return; }
@@ -3368,9 +3386,8 @@ async function extractUrl(raw){
 function onExtract(){
   const file=$('v19file')&&$('v19file').files&&$('v19file').files[0];
   const url=($('v19url')&&$('v19url').value||'').trim();
-  if(file && (PILL==='file' || !url)) { extractFile(file); return; }
-  if(url){ extractUrl(url); return; }
   if(file){ extractFile(file); return; }
+  if(url){ extractUrl(url); return; }
   setStatus('העלה סרטון, או הדבק קישור ישיר לקובץ מדיה.', true);
 }
 
@@ -3387,6 +3404,7 @@ document.getElementById('v19file').onchange=()=>{
   const f=$('v19file').files&&$('v19file').files[0];
   if(!f) return;
   setPill('file');
+  if(YT_ARM){ YT_ARM=false; extractFile(f); return; }
   setStatus('נבחר קובץ: '+f.name, false);
 };
 const prevFile=$('afile')&&$('afile').onchange;
